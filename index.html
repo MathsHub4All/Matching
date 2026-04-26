@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Math Match">
+<meta name="application-name" content="Math Match">
+<meta name="theme-color" content="#ff7eb3">
+<meta name="description" content="A fun UK-curriculum maths card-matching game for 2–5 teams. Choose Year Group, topic and difficulty — flip, match, score!">
+<title>Math Match 🐱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fdf6f0; --bg2:#fff9f5;
+  --text-dark:#3d2c2c; --text-mid:#7a5c5c; --text-soft:#b89090;
+  --accent:#ff7eb3; --accent3:#7ec8e3;
+  --sh:rgba(200,130,150,0.18); --sh2:rgba(200,130,150,0.32);
+  --t1:#ff5c8a; --t2:#3db8e8; --t3:#4cca7e; --t4:#a855f7; --t5:#f97316;
+  /* safe-area for notch phones */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;}
+body{height:100%;overflow:hidden;background:var(--bg);color:var(--text-dark);font-family:'Nunito',sans-serif;position:relative;}
+/* Setup screen: fixed+scrollable so it works on iOS Safari regardless of body overflow */
+body.setup-mode #setup-screen{
+  position:fixed;inset:0;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 500px 360px at 8% 12%,rgba(255,179,198,.22) 0%,transparent 70%),
+    radial-gradient(ellipse 400px 300px at 92% 82%,rgba(189,224,255,.22) 0%,transparent 70%),
+    radial-gradient(ellipse 320px 260px at 55% 4%,rgba(255,240,163,.18) 0%,transparent 70%),
+    radial-gradient(ellipse 280px 220px at 4% 88%,rgba(184,240,216,.18) 0%,transparent 70%);}
+
+/* ─── SETUP SCREEN ─── */
+.screen{position:relative;z-index:1;}
+#setup-screen{display:flex;flex-direction:column;align-items:center;min-height:100%;padding:calc(20px + var(--sat)) calc(16px + var(--sar)) calc(60px + var(--sab)) calc(16px + var(--sal));}
+/* ── Touch optimisation — no double-tap zoom delay ── */
+button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.logo{font-family:'Fredoka One',cursive;font-size:clamp(40px,8vw,76px);color:var(--accent);text-shadow:3px 3px 0 #ffc0d9;letter-spacing:2px;line-height:1;display:inline-block;animation:logoBounce 2.4s ease-in-out infinite;text-align:center;}
+@keyframes logoBounce{0%,100%{transform:translateY(0) rotate(-1deg);}50%{transform:translateY(-6px) rotate(1deg);}}
+.tagline{font-size:12px;color:var(--text-soft);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-top:4px;margin-bottom:14px;}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:820px;}
+@media(max-width:620px){.setup-grid{grid-template-columns:1fr;}}
+.sp{background:#fff;border:2.5px solid #fdd5e5;border-radius:18px;padding:18px;box-shadow:0 4px 18px var(--sh);transition:box-shadow .2s,transform .2s;}
+.sp:hover{box-shadow:0 8px 28px var(--sh2);transform:translateY(-1px);}
+.sp-full{grid-column:1/-1;}
+.pl{font-family:'Fredoka One',cursive;font-size:15px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.year-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px;}
+.yb{background:var(--bg2);border:2.5px solid #f5d0e8;border-radius:12px;color:var(--text-mid);font-family:'Fredoka One',cursive;font-size:17px;padding:8px 4px 6px;cursor:pointer;transition:all .18s;text-align:center;line-height:1.2;}
+.yb small{display:block;font-size:9px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;margin-top:2px;font-family:'Nunito',sans-serif;}
+.yb:hover{transform:translateY(-3px) scale(1.07);border-color:var(--accent);color:var(--accent);}
+.yb.active{border-color:var(--accent);color:var(--accent);background:#fff0f7;transform:scale(1.05);}
+.topic-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.tb{background:var(--bg2);border:2.5px solid #d8eeff;border-radius:100px;color:var(--text-mid);font-size:12px;font-weight:800;padding:7px 14px;cursor:pointer;transition:all .18s;}
+.tb:hover{transform:translateY(-2px) scale(1.05);border-color:var(--accent3);color:var(--accent3);}
+.tb.active{border-color:var(--accent3);color:#fff;background:var(--accent3);}
+.diff-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.db{background:var(--bg2);border:2.5px solid #ffe0ee;border-radius:14px;color:var(--text-soft);font-family:'Fredoka One',cursive;font-size:18px;padding:12px 4px 10px;cursor:pointer;transition:all .18s;text-align:center;line-height:1.3;}
+.db small{display:block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:3px;font-family:'Nunito',sans-serif;}
+.db:hover{transform:translateY(-3px) scale(1.06);}
+.db[data-diff="low"].active{border-color:#7ee8a2;color:#7ee8a2;background:#f0fff6;}
+.db[data-diff="mid"].active{border-color:#ffb347;color:#ffb347;background:#fff8f0;}
+.db[data-diff="high"].active{border-color:#ff7eb3;color:#ff7eb3;background:#fff0f6;}
+.team-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.tmb{background:var(--bg2);border:2.5px solid #ffe0ee;border-radius:12px;color:var(--text-mid);font-family:'Fredoka One',cursive;font-size:24px;padding:12px 0;cursor:pointer;transition:all .18s;}
+.tmb:hover{transform:translateY(-3px) scale(1.08);border-color:var(--accent);color:var(--accent);}
+.tmb.active{border-color:var(--accent);color:var(--accent);background:#fff0f7;}
+.start-btn{width:100%;max-width:820px;background:linear-gradient(135deg,var(--accent),#ff9fcf);color:#fff;border:none;border-radius:100px;font-family:'Fredoka One',cursive;font-size:22px;padding:18px;cursor:pointer;transition:all .22s;box-shadow:0 6px 24px rgba(255,126,179,.4);margin-top:14px;}
+.start-btn:not(:disabled):hover{transform:translateY(-3px) scale(1.02);}
+.start-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ─── GAME SCREEN ─── */
+#game-screen{display:none;flex-direction:column;height:100vh;height:100dvh;padding:calc(10px + var(--sat)) calc(14px + var(--sar)) calc(10px + var(--sab)) calc(14px + var(--sal));overflow:hidden;}
+.gh{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;flex-shrink:0;}
+.gtitle{font-family:'Fredoka One',cursive;font-size:clamp(20px,2.8vw,30px);color:var(--accent);line-height:1;}
+.gmeta{font-size:10px;color:var(--text-soft);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
+.scores-bar{display:flex;gap:7px;flex-wrap:wrap;}
+.chip{background:#fff;border:2.5px solid #fdd5e5;border-radius:100px;padding:5px 14px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:7px;transition:all .25s;box-shadow:0 2px 8px var(--sh);}
+.chip.cur{border-color:var(--tc);background:var(--tbg);box-shadow:0 4px 14px var(--tsh);transform:scale(1.07);}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--tc);flex-shrink:0;}
+.turn-banner{text-align:center;font-size:12px;color:var(--text-soft);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;flex-shrink:0;}
+.turn-banner span{font-size:14px;}
+.hbtns{display:flex;gap:8px;}
+.ibtn{background:#fff;border:2.5px solid #fdd5e5;color:var(--text-soft);border-radius:100px;font-size:12px;font-weight:800;padding:7px 14px;cursor:pointer;transition:all .18s;box-shadow:0 2px 8px var(--sh);}
+.ibtn:hover{border-color:var(--accent);color:var(--accent);transform:scale(1.06);}
+.ibtn.music{border-color:#bde0ff;color:var(--accent3);}
+.ibtn.muted{opacity:.5;}
+
+/* ─── GRID WRAP ─── */
+#gw{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;}
+.card-grid{display:grid;gap:9px;position:relative;z-index:5;}
+
+/* ─── CARDS ─── */
+.cw{perspective:700px;cursor:pointer;position:relative;}
+.ci{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1);border-radius:14px;}
+.cw.flipped .ci,.cw.matched .ci{transform:rotateY(180deg);}
+.cw.matched .cf{border-color:var(--mc,var(--accent));box-shadow:0 0 0 3px var(--mc,var(--accent));}
+.cw:not(.flipped):not(.matched):hover .ci{transform:translateY(-5px) scale(1.05);}
+.cw:not(.flipped):not(.matched):hover{z-index:6;}
+.cw.wrong .ci{animation:shakeC .42s ease;}
+@keyframes shakeC{0%,100%{transform:rotateY(180deg) translateX(0);}25%{transform:rotateY(180deg) translateX(-6px);}75%{transform:rotateY(180deg) translateX(6px);}}
+.cw.pop .ci{animation:popC .4s cubic-bezier(.17,.67,.83,.67);}
+@keyframes popC{0%{transform:rotateY(180deg) scale(1);}50%{transform:rotateY(180deg) scale(1.12);}100%{transform:rotateY(180deg) scale(1);}}
+.cface{position:absolute;inset:0;border-radius:14px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cb{background:#fff;border:3px solid #f8a4c8;box-shadow:0 4px 16px var(--sh2);}
+.cbpat{width:68%;height:68%;border-radius:10px;background:repeating-linear-gradient(45deg,#ffe8f4,#ffe8f4 4px,#fff5fa 4px,#fff5fa 12px);display:flex;align-items:center;justify-content:center;font-size:clamp(12px,2vw,22px);}
+.cf{background:#fffef8;border:3px solid #ffe8f4;transform:rotateY(180deg);flex-direction:column;gap:3px;padding:5px;box-shadow:0 4px 14px var(--sh);transition:border-color .3s,box-shadow .3s;}
+.cv{font-family:'Fredoka One',cursive;font-size:clamp(11px,2vw,26px);color:var(--text-dark);text-align:center;line-height:1.1;word-break:break-word;}
+.ctl{font-size:clamp(6px,.9vw,9px);letter-spacing:1.5px;text-transform:uppercase;color:var(--text-soft);font-weight:700;}
+.cw.matched .cv{color:var(--mc,var(--accent));}
+
+/* ══════════════════════════════════════════════════════
+   REALISTIC 3D CSS CAT
+   Inspired by the silver tabby and cream/orange cats in photos.
+   Built from layered CSS shapes with radial-gradient fur shading.
+══════════════════════════════════════════════════════ */
+
+/* Cat container — absolutely positioned over the game board */
+.cat-actor {
+  position: absolute;
+  width: 80px;
+  height: 100px;
+  pointer-events: none;
+  /* z-index toggled via JS to go behind/in-front of cards (z:5) */
+  z-index: 8;
+  /* Smooth slow movement */
+  transition:
+    left   4.5s cubic-bezier(.25,.46,.45,.94),
+    top    4.0s cubic-bezier(.25,.46,.45,.94),
+    z-index 0s linear,
+    transform .8s ease,
+    opacity .6s ease;
+  will-change: left, top;
+}
+.cat-actor.flipped-x { transform: scaleX(-1); }
+.cat-actor.behind-cards { z-index: 3; }
+
+/* ── The whole cat body bounces gently ── */
+.cat-body-wrap {
+  position: absolute;
+  bottom: 0;
+  width: 80px;
+  height: 100px;
+}
+
+/* Walking oscillation */
+.cat-body-wrap.walk  { animation: catWalk  1.4s ease-in-out infinite; }
+.cat-body-wrap.idle  { animation: catIdle  3.0s ease-in-out infinite; }
+.cat-body-wrap.peek  { animation: catPeek  3.8s ease-in-out infinite; }
+.cat-body-wrap.happy { animation: catHappy 0.55s ease-in-out infinite; }
+.cat-body-wrap.sad   { animation: catSad   2.6s ease-in-out infinite; }
+
+@keyframes catWalk  { 0%,100%{transform:translateY(0) rotate(0deg);}  30%{transform:translateY(-4px) rotate(.8deg);} 70%{transform:translateY(-2px) rotate(-.8deg);} }
+@keyframes catIdle  { 0%,100%{transform:translateY(0);}               50%{transform:translateY(-4px);} }
+@keyframes catPeek  { 0%,38%,100%{transform:translateY(28px);}        52%,88%{transform:translateY(4px);} }
+@keyframes catHappy { 0%,100%{transform:translateY(0) scaleX(1);}     35%{transform:translateY(-9px) scaleX(1);} 65%{transform:translateY(-3px) scaleX(-1);} }
+@keyframes catSad   { 0%,100%{transform:translateY(0) rotate(0deg);}  50%{transform:translateY(3px) rotate(-2.5deg);} }
+
+/* ── BODY ──
+   Rounded rectangular form, fur shaded with radial gradient
+   Represents the loaf/sitting position from photo 2 */
+.cat-bod {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 44px;
+  border-radius: 50% 50% 40% 40% / 55% 55% 45% 45%;
+  background: var(--fur-body);
+  box-shadow:
+    inset -10px -8px 16px rgba(0,0,0,.22),
+    inset 8px 4px 12px rgba(255,255,255,.18),
+    inset -4px 6px 0 rgba(0,0,0,.08),
+    0 6px 18px rgba(0,0,0,.22),
+    0 2px 6px rgba(0,0,0,.15);
+}
+/* belly lighter patch */
+.cat-bod::after {
+  content:'';
+  position:absolute;
+  bottom:3px; left:50%; transform:translateX(-50%);
+  width:30px; height:26px;
+  border-radius:50%;
+  background: var(--fur-belly);
+  box-shadow: inset 0 3px 8px rgba(0,0,0,.08);
+  opacity:.9;
+}
+/* body fur stripe marks — subtle lines like tabby pattern */
+.cat-bod::before {
+  content:'';
+  position:absolute;
+  top:6px; left:8px;
+  width:3px; height:18px;
+  background:var(--fur-stripe);
+  border-radius:2px;
+  box-shadow:
+    8px 0 0 var(--fur-stripe),
+    32px -2px 0 1px var(--fur-stripe),
+    40px 0 0 var(--fur-stripe);
+  opacity:.28;
+}
+
+/* ── HEAD ── */
+.cat-head {
+  position: absolute;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 50px;
+  border-radius: 50% 50% 46% 46% / 54% 54% 46% 46%;
+  background: var(--fur-head);
+  box-shadow:
+    inset -8px -6px 14px rgba(0,0,0,.2),
+    inset 7px 3px 10px rgba(255,255,255,.15),
+    inset 0 -4px 8px rgba(0,0,0,.1),
+    0 4px 12px rgba(0,0,0,.2);
+  z-index: 2;
+}
+/* forehead darker patch for tabby markings */
+.cat-head::before {
+  content:'';
+  position:absolute;
+  top:3px; left:50%; transform:translateX(-50%);
+  width:28px; height:16px;
+  border-radius:50%;
+  background:var(--fur-top);
+  opacity:.55;
+}
+/* chin/cheek lighter area */
+.cat-head::after {
+  content:'';
+  position:absolute;
+  bottom:4px; left:50%; transform:translateX(-50%);
+  width:34px; height:20px;
+  border-radius:50%;
+  background:var(--fur-belly);
+  opacity:.55;
+}
+
+/* ── EARS ── */
+.cat-ear {
+  position: absolute;
+  width: 0; height: 0;
+  bottom: 98px;
+  z-index: 3;
+  filter: drop-shadow(0 -2px 4px rgba(0,0,0,.2));
+}
+.cat-ear.L {
+  left: calc(50% - 30px);
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 24px solid var(--fur-head);
+  transform: rotate(-14deg);
+}
+.cat-ear.R {
+  left: calc(50% + 8px);
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 24px solid var(--fur-head);
+  transform: rotate(14deg);
+}
+/* inner ear */
+.cat-ear::after {
+  content:'';
+  position:absolute;
+  bottom:-18px; left:-7px;
+  width:0; height:0;
+  border-left:7px solid transparent;
+  border-right:7px solid transparent;
+  border-bottom:14px solid var(--ear-inner);
+  opacity:.75;
+}
+/* grumpy ear tilt */
+.mood-grumpy .cat-ear.L { transform:rotate(-8deg); }
+.mood-grumpy .cat-ear.R { transform:rotate(8deg); }
+/* sad: ears drooped flat */
+.mood-sad .cat-ear.L { transform:rotate(-28deg) translateY(4px); }
+.mood-sad .cat-ear.R { transform:rotate(28deg) translateY(4px); }
+
+/* ── FACE LAYER (eyes, nose, mouth, whiskers) ── */
+.cat-face {
+  position: absolute;
+  bottom: 57px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 50px;
+  z-index: 4;
+}
+
+/* ── EYES ──
+   Eyes are the most expressive part — modelled on the photos.
+   Each eye = white sclera + iris + pupil + shine + eyelid overlay */
+.eye-wrap {
+  position: absolute;
+  top: 13px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+.eye-wrap.L { left: 4px; }
+.eye-wrap.R { right: 4px; }
+
+.eye-sclera {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  /* Subtle off-white with depth */
+  background: radial-gradient(circle at 38% 32%, #f2f2ee, #d0cfc8);
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,.25),
+    0 2px 5px rgba(0,0,0,.3);
+  position: relative;
+  overflow: visible;
+}
+
+/* Iris — colour varies by cat */
+.eye-iris {
+  position:absolute;
+  border-radius:50%;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  background: var(--eye-iris);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.3);
+}
+/* Pupil — vertical slit like a real cat */
+.eye-pupil {
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  background: #0a0808;
+  border-radius:50%;
+  box-shadow: 0 0 6px rgba(0,0,0,.9);
+}
+/* Eye shine — gives the glassy wet look */
+.eye-shine {
+  position:absolute;
+  background:rgba(255,255,255,.88);
+  border-radius:50%;
+  top:3px; left:3px;
+  width:5px; height:5px;
+}
+.eye-shine2 {
+  position:absolute;
+  background:rgba(255,255,255,.55);
+  border-radius:50%;
+  bottom:3px; right:3px;
+  width:3px; height:3px;
+}
+
+/* Eyelid — for grumpy/droopy expressions */
+.eye-lid {
+  position:absolute;
+  top:0; left:0; right:0;
+  background:var(--fur-head);
+  border-radius:50% 50% 0 0;
+  height:0;
+  transition:height .3s ease;
+  z-index:5;
+  box-shadow:0 2px 4px rgba(0,0,0,.1);
+}
+
+/* ── MOOD-SPECIFIC EYE SIZES AND LIDS ── */
+/* NORMAL: medium pupil, open eyes */
+.mood-normal .eye-iris  { width:13px; height:13px; }
+.mood-normal .eye-pupil { width:9px; height:10px; border-radius:40% 40% 45% 45%; }
+.mood-normal .eye-lid   { height:0; }
+
+/* SAD (photo 1): huge dilated pupils, droopy sad lids, big teary eyes */
+.mood-sad .eye-wrap     { width:20px; height:20px; }
+.mood-sad .eye-wrap.L   { left:2px; top:11px; }
+.mood-sad .eye-wrap.R   { right:2px; top:11px; }
+.mood-sad .eye-iris     { width:16px; height:16px; }
+.mood-sad .eye-pupil    { width:14px; height:15px; border-radius:50%; }
+.mood-sad .eye-lid      { height:4px; border-radius:50% 50% 0 0; }
+.mood-sad .eye-shine    { width:6px; height:6px; top:2px; left:2px; }
+
+/* CALM (photo 2): slightly squinted, serene */
+.mood-calm .eye-iris    { width:12px; height:11px; border-radius:40%; }
+.mood-calm .eye-pupil   { width:8px; height:9px; border-radius:40% 40% 45% 45%; }
+.mood-calm .eye-lid     { height:5px; }
+
+/* GRUMPY (photo 3): narrow squinting eyes, heavy brow lids */
+.mood-grumpy .eye-iris  { width:11px; height:9px; border-radius:35%; }
+.mood-grumpy .eye-pupil { width:7px; height:7px; border-radius:35%; }
+.mood-grumpy .eye-lid   { height:8px; border-radius:55% 55% 0 0; }
+
+/* CHEEKY/TONGUE (photo 4): same narrow angry eyes as grumpy */
+.mood-tongue .eye-iris  { width:10px; height:8px; border-radius:35%; }
+.mood-tongue .eye-pupil { width:6px; height:6px; border-radius:35%; }
+.mood-tongue .eye-lid   { height:9px; border-radius:55% 55% 0 0; }
+
+/* ── NOSE ── */
+.cat-nose {
+  position:absolute;
+  top:31px; left:50%; transform:translateX(-50%);
+  width:0; height:0;
+  border-left:5px solid transparent;
+  border-right:5px solid transparent;
+  border-top:5px solid var(--nose-col);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.2));
+}
+
+/* ── FOREHEAD WRINKLE LINES (grumpy/tongue) ── */
+.brow-lines {
+  position:absolute;
+  top:7px; left:50%; transform:translateX(-50%);
+  width:24px; height:14px;
+  opacity:0;
+  transition:opacity .3s;
+}
+.brow-lines svg { overflow:visible; }
+.mood-grumpy .brow-lines,
+.mood-tongue .brow-lines { opacity:1; }
+
+/* ── MOUTH ── */
+.cat-mouth {
+  position:absolute;
+  bottom:5px; left:50%; transform:translateX(-50%);
+  width:24px; height:12px;
+}
+.cat-mouth svg { overflow:visible; }
+
+/* ── TONGUE (photo 4 — cheeky sticking out) ── */
+.cat-tongue {
+  position:absolute;
+  bottom:1px; left:50%; transform:translateX(-50%);
+  width:12px; height:11px;
+  background:radial-gradient(circle at 50% 30%, #ff8fa0, #d93050);
+  border-radius:50% 50% 55% 55%;
+  box-shadow:inset 0 3px 5px rgba(0,0,0,.15);
+  display:none;
+}
+.mood-tongue .cat-tongue { display:block; }
+
+/* ── TEARS (sad expression) ── */
+.tear {
+  position:absolute;
+  width:4px; height:9px;
+  background:linear-gradient(to bottom,rgba(180,215,255,.9),rgba(130,180,255,.4));
+  border-radius:50% 50% 60% 60%;
+  display:none;
+  top:30px;
+  animation:tearFall 2s ease-in-out infinite;
+}
+.tear.L { left:7px; animation-delay:.4s; }
+.tear.R { right:7px; }
+@keyframes tearFall{0%,100%{transform:translateY(0);opacity:.9;}60%{transform:translateY(8px);opacity:.3;}}
+.mood-sad .tear { display:block; }
+
+/* ── WHISKERS ── */
+.whiskers {
+  position:absolute;
+  top:29px; width:100%;
+  z-index:6;
+}
+.wh {
+  position:absolute;
+  height:1.5px;
+  background:rgba(255,255,255,.88);
+  border-radius:2px;
+  box-shadow:0 0 3px rgba(255,255,255,.4);
+}
+/* grumpy: whiskers angled more aggressively */
+.mood-grumpy .wh, .mood-tongue .wh { opacity:.9; }
+
+.wh.l1{width:20px;left:2px;top:0; transform:rotate(-12deg);transform-origin:right center;}
+.wh.l2{width:22px;left:0; top:6px;transform:rotate(-4deg);transform-origin:right center;}
+.wh.l3{width:20px;left:2px;top:12px;transform:rotate(6deg);transform-origin:right center;}
+.wh.r1{width:20px;right:2px;top:0; transform:rotate(12deg);transform-origin:left center;}
+.wh.r2{width:22px;right:0; top:6px;transform:rotate(4deg);transform-origin:left center;}
+.wh.r3{width:20px;right:2px;top:12px;transform:rotate(-6deg);transform-origin:left center;}
+
+/* ── CHEEK BLUSH ── */
+.blush {
+  position:absolute;
+  top:22px;
+  width:13px; height:8px;
+  border-radius:50%;
+  background:rgba(255,130,155,.25);
+  opacity:0;
+  transition:opacity .4s;
+}
+.blush.L { left:1px; }
+.blush.R { right:1px; }
+.mood-normal .blush,
+.mood-calm .blush   { opacity:1; }
+.mood-sad .blush    { opacity:1; background:rgba(160,190,255,.3); }
+
+/* ── FRONT PAWS ── */
+.cat-paws {
+  position:absolute;
+  bottom:14px; left:50%; transform:translateX(-50%);
+  width:54px; height:18px;
+  display:flex; justify-content:space-between; align-items:flex-end;
+  z-index:3;
+}
+.paw {
+  width:23px; height:16px;
+  border-radius:50% 50% 42% 42%;
+  background:var(--fur-body);
+  box-shadow:
+    inset -4px -3px 6px rgba(0,0,0,.2),
+    inset 4px 2px 5px rgba(255,255,255,.12),
+    0 3px 7px rgba(0,0,0,.2);
+  position:relative;
+  overflow:hidden;
+}
+/* toe beans on paws */
+.paw::after {
+  content:'';
+  position:absolute;
+  bottom:2px; left:50%; transform:translateX(-50%);
+  width:17px; height:8px;
+  border-radius:50%;
+  background:var(--fur-belly);
+  opacity:.65;
+}
+.paw::before {
+  content:'';
+  position:absolute;
+  top:2px; left:50%; transform:translateX(-50%);
+  width:19px; height:6px;
+  /* subtle toe line dividers */
+  background:repeating-linear-gradient(to right,transparent,transparent 4px,rgba(0,0,0,.1) 4px,rgba(0,0,0,.1) 5px);
+}
+
+/* ── TAIL ──
+   SVG drawn tail, sits behind the body */
+.cat-tail {
+  position:absolute;
+  bottom:18px;
+  left:3px;
+  width:30px; height:56px;
+  z-index:1;
+  transform-origin:top center;
+}
+.tail-wag  { animation:tailWag  1.1s ease-in-out infinite; }
+.tail-droop{ animation:tailDroop 2.6s ease-in-out infinite; }
+.tail-puff { animation:tailPuff 0.6s ease-in-out infinite; }
+@keyframes tailWag  {0%,100%{transform:rotate(-18deg);}50%{transform:rotate(18deg);}}
+@keyframes tailDroop{0%,100%{transform:rotate(-48deg);}50%{transform:rotate(-58deg);}}
+@keyframes tailPuff {0%,100%{transform:rotate(-8deg)  scaleX(1);}50%{transform:rotate(8deg) scaleX(1.1);}}
+
+/* ── COLLAR (coloured by team) ── */
+.cat-collar {
+  position:absolute;
+  bottom:54px; left:50%; transform:translateX(-50%);
+  width:55px; height:9px;
+  border-radius:4px;
+  background:var(--collar-col);
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.3),
+    inset 0 1px 2px rgba(255,255,255,.35),
+    inset 0 -1px 2px rgba(0,0,0,.2);
+  z-index:3;
+}
+/* Bell on collar */
+.cat-collar::after {
+  content:'🔔';
+  position:absolute;
+  bottom:-11px; left:50%; transform:translateX(-50%);
+  font-size:11px;
+  animation:bellRing 2.2s ease-in-out infinite;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.25));
+}
+@keyframes bellRing{0%,100%{transform:translateX(-50%) rotate(-10deg);}50%{transform:translateX(-50%) rotate(10deg);}}
+
+/* ── SPEECH BUBBLE ── */
+.cat-bubble {
+  position:absolute;
+  bottom:108px; left:50%; transform:translateX(-50%);
+  background:#fff;
+  border:2px solid #fdd5e5;
+  border-radius:14px;
+  padding:5px 10px;
+  font-family:'Fredoka One',cursive;
+  font-size:12px; color:var(--text-dark);
+  white-space:nowrap;
+  box-shadow:0 3px 12px var(--sh);
+  opacity:0; transition:opacity .35s;
+  pointer-events:none; z-index:30;
+  min-width:50px; text-align:center;
+}
+.cat-bubble::after{
+  content:''; position:absolute;
+  top:100%; left:50%; transform:translateX(-50%);
+  border:7px solid transparent;
+  border-top-color:#fdd5e5;
+}
+.cat-bubble.show{opacity:1;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) scale(.9);background:#fff;border:2.5px solid #fdd5e5;border-radius:100px;padding:11px 24px;font-size:14px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;z-index:200;box-shadow:0 8px 30px var(--sh2);}
+#toast.show{opacity:1;transform:translateX(-50%) scale(1);}
+
+/* ── CONFETTI ── */
+.cfp{position:fixed;pointer-events:none;z-index:200;width:8px;height:8px;border-radius:2px;animation:cfFall 1.2s ease-out forwards;}
+@keyframes cfFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(150px) rotate(540deg);}}
+
+/* ── WIN SCREEN ── */
+#win-screen{display:none;position:fixed;inset:0;background:rgba(253,246,240,.96);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(18px);padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.win-title{font-family:'Fredoka One',cursive;font-size:clamp(50px,11vw,110px);color:var(--accent);text-shadow:4px 4px 0 #ffc0d9;animation:wB 1.4s ease-in-out infinite;}
+@keyframes wB{0%,100%{transform:rotate(-2deg) scale(1);}50%{transform:rotate(2deg) scale(1.06);}}
+.win-results{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.wchip{background:#fff;border:3px solid #fdd5e5;border-radius:20px;padding:16px 22px;text-align:center;min-width:100px;box-shadow:0 4px 16px var(--sh);}
+.wchip.winner{border-color:var(--accent);box-shadow:0 0 0 4px rgba(255,126,179,.2),0 8px 24px var(--sh2);}
+.wcn{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.wcs{font-family:'Fredoka One',cursive;font-size:44px;}
+.pab{background:linear-gradient(135deg,var(--accent),#ff9fcf);color:#fff;border:none;border-radius:100px;font-family:'Fredoka One',cursive;font-size:22px;padding:16px 44px;cursor:pointer;transition:all .22s;box-shadow:0 6px 22px rgba(255,126,179,.4);}
+.pab:hover{transform:translateY(-3px) scale(1.04);}
+
+/* floating deco stars */
+.sf{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.st{position:absolute;opacity:.10;animation:stFloat linear infinite;}
+@keyframes stFloat{0%,100%{transform:translateY(0) rotate(0deg);}50%{opacity:.16;}100%{transform:translateY(-50px) rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="sf" id="sf"></div>
+
+<!-- ══════ SETUP ══════ -->
+<div id="setup-screen" class="screen">
+  <div class="logo">🐱 Math Match 🐱</div>
+  <div class="tagline">UK Curriculum · Year 1–11 · Flip · Match · Score</div>
+
+  <!-- How to Play strip -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:820px;width:100%;margin-bottom:14px;">
+    <div style="background:#fff;border:2px solid #fdd5e5;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--text-mid);box-shadow:0 2px 10px var(--sh);">
+      <span style="font-size:18px;">🃏</span> Pick a pair of cards that match
+    </div>
+    <div style="background:#fff;border:2px solid #d8eeff;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--text-mid);box-shadow:0 2px 10px var(--sh);">
+      <span style="font-size:18px;">🔢</span> Equation card ↔ Answer card
+    </div>
+    <div style="background:#fff;border:2px solid #d8fce8;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--text-mid);box-shadow:0 2px 10px var(--sh);">
+      <span style="font-size:18px;">🏆</span> Most matches wins!
+    </div>
+  </div>
+
+  <div class="setup-grid">
+    <div class="sp sp-full">
+      <div class="pl">🎓 Year Group</div>
+      <div class="year-grid" id="year-grid"></div>
+    </div>
+    <div class="sp sp-full">
+      <div class="pl">📚 Topic <span id="tyl" style="color:var(--accent3);margin-left:4px;font-size:13px;"></span></div>
+      <div class="topic-grid" id="topic-grid"><span style="color:var(--text-soft);font-size:13px;font-weight:700;">← Pick a year group first!</span></div>
+    </div>
+    <div class="sp">
+      <div class="pl">⭐ Difficulty</div>
+      <div class="diff-row">
+        <button class="db active" data-diff="low">🌱<br>Low<small>Easier</small></button>
+        <button class="db" data-diff="mid">🌟<br>Mid<small>Standard</small></button>
+        <button class="db" data-diff="high">🔥<br>High<small>Challenge</small></button>
+      </div>
+    </div>
+    <div class="sp">
+      <div class="pl">🐱 Teams</div>
+      <div class="team-row">
+        <button class="tmb active" data-teams="2">2</button>
+        <button class="tmb" data-teams="3">3</button>
+        <button class="tmb" data-teams="4">4</button>
+        <button class="tmb" data-teams="5">5</button>
+      </div>
+    </div>
+  </div>
+  <button class="start-btn" id="start-btn" disabled>🌸 Select a Year &amp; Topic to Start 🌸</button>
+  <div style="margin-top:18px;font-size:11px;color:var(--text-soft);font-weight:700;letter-spacing:1px;text-align:center;opacity:.7;">
+    Math Match · UK Curriculum Edition · Y1–Y11
+  </div>
+</div>
+
+<!-- ══════ GAME ══════ -->
+<div id="game-screen" class="screen">
+  <div class="gh">
+    <div><div class="gtitle">🐱 Math Match</div><div class="gmeta" id="gmeta"></div></div>
+    <div class="scores-bar" id="scores-bar"></div>
+    <div class="hbtns">
+      <button class="ibtn music" id="music-btn">🎵 Music</button>
+      <button class="ibtn" id="reset-btn">↩ New Game</button>
+    </div>
+  </div>
+  <div class="turn-banner" id="turn-banner"></div>
+  <div id="gw"><div class="card-grid" id="card-grid"></div></div>
+</div>
+
+<!-- ══════ WIN ══════ -->
+<div id="win-screen" class="screen">
+  <div class="win-title">🎉 Well done!</div>
+  <div style="font-family:'Fredoka One',cursive;font-size:clamp(16px,3.5vw,28px);color:var(--text-mid);margin-top:-8px;">Final Scores</div>
+  <div class="win-results" id="win-results"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:320px;">
+    <button class="pab" id="play-again-btn" style="width:100%;">🐱 Play Again!</button>
+    <button class="pab" id="new-game-btn" style="width:100%;background:linear-gradient(135deg,#7ec8e3,#5ab4d8);box-shadow:0 6px 22px rgba(126,200,227,.4);">🎓 Choose New Topic</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════
+   CAT VISUAL CONFIGS — 5 breed-colour variants
+   Matching reference photos:
+   - silver tabby (imgs 1&2): grey fur, green eyes
+   - cream/orange (imgs 3&4): warm cream, green eyes
+════════════════════════════════════════════════ */
+const CAT_BREEDS = [
+  // 0: Silver tabby (like photos 1 & 2)
+  {
+    '--fur-body':   'radial-gradient(ellipse at 40% 30%, #d8d8d8, #b0b0b0 55%, #888 100%)',
+    '--fur-head':   'radial-gradient(ellipse at 42% 35%, #d4d4d4, #acacac 55%, #888 90%)',
+    '--fur-belly':  '#efefef',
+    '--fur-top':    '#909090',
+    '--fur-stripe': '#6a6a6a',
+    '--ear-inner':  '#dda0b0',
+    '--eye-iris':   'radial-gradient(circle at 40% 35%, #6daa50, #3a7a28)',
+    '--nose-col':   '#d8a0b0',
+    '--collar-col': '#ff4466',
+  },
+  // 1: Cream/orange (like photos 3 & 4)
+  {
+    '--fur-body':   'radial-gradient(ellipse at 40% 30%, #f0d8a8, #d4a868 55%, #b07038 100%)',
+    '--fur-head':   'radial-gradient(ellipse at 42% 35%, #edd5a8, #d0a060 55%, #a87030 90%)',
+    '--fur-belly':  '#fff5e8',
+    '--fur-top':    '#c09050',
+    '--fur-stripe': '#a06828',
+    '--ear-inner':  '#e8b090',
+    '--eye-iris':   'radial-gradient(circle at 40% 35%, #80aa28, #4a7018)',
+    '--nose-col':   '#e09088',
+    '--collar-col': '#3399ff',
+  },
+  // 2: Warm ginger
+  {
+    '--fur-body':   'radial-gradient(ellipse at 40% 30%, #e09050, #c06830 55%, #904020 100%)',
+    '--fur-head':   'radial-gradient(ellipse at 42% 35%, #dda060, #c07040 55%, #904030 90%)',
+    '--fur-belly':  '#ffeacc',
+    '--fur-top':    '#a85830',
+    '--fur-stripe': '#803820',
+    '--ear-inner':  '#e09878',
+    '--eye-iris':   'radial-gradient(circle at 40% 35%, #c8a030, #906010)',
+    '--nose-col':   '#d87060',
+    '--collar-col': '#22cc66',
+  },
+  // 3: Dark charcoal
+  {
+    '--fur-body':   'radial-gradient(ellipse at 40% 30%, #808080, #545454 55%, #303030 100%)',
+    '--fur-head':   'radial-gradient(ellipse at 42% 35%, #7a7a7a, #505050 55%, #303030 90%)',
+    '--fur-belly':  '#c8c8c8',
+    '--fur-top':    '#484848',
+    '--fur-stripe': '#282828',
+    '--ear-inner':  '#cc8898',
+    '--eye-iris':   'radial-gradient(circle at 40% 35%, #d8a020, #a06808)',
+    '--nose-col':   '#bb7080',
+    '--collar-col': '#aa44ff',
+  },
+  // 4: Warm tan/buff
+  {
+    '--fur-body':   'radial-gradient(ellipse at 40% 30%, #d4b078, #b88848 55%, #8c6428 100%)',
+    '--fur-head':   'radial-gradient(ellipse at 42% 35%, #d0ac78, #b08848 55%, #8a6428 90%)',
+    '--fur-belly':  '#fff0d8',
+    '--fur-top':    '#a07838',
+    '--fur-stripe': '#786030',
+    '--ear-inner':  '#e0a880',
+    '--eye-iris':   'radial-gradient(circle at 40% 35%, #5898cc, #3060a0)',
+    '--nose-col':   '#d89080',
+    '--collar-col': '#ff8800',
+  },
+];
+
+/* ════════════════════════════════════════════════
+   MOOD → EXPRESSION SYSTEM
+   Moods: normal | calm | sad | grumpy | tongue
+   Mapped from photo references
+════════════════════════════════════════════════ */
+const MOOD_MOUTH = {
+  normal: `<path d="M4,3 Q12,9 20,3" stroke="#8a6060" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+           <path d="M9,4 Q12,2 15,4" stroke="#8a6060" stroke-width="1" fill="none" stroke-linecap="round"/>`,
+  calm:   `<path d="M5,5 Q12,8 19,5" stroke="#8a6060" stroke-width="1.7" fill="none" stroke-linecap="round"/>`,
+  sad:    `<path d="M4,7 Q12,2 20,7" stroke="#8a6060" stroke-width="1.7" fill="none" stroke-linecap="round"/>`,
+  grumpy: `<path d="M4,6 Q12,3 20,6" stroke="#664040" stroke-width="2"   fill="none" stroke-linecap="round"/>`,
+  tongue: `<path d="M5,5 Q12,7 19,5" stroke="#664040" stroke-width="2"   fill="none" stroke-linecap="round"/>`,
+};
+
+const BROW_SVG = `<svg width="24" height="14" viewBox="0 0 24 14">
+  <path d="M2,11 Q12,3 22,11" stroke="var(--fur-stripe)" stroke-width="1.5" fill="none" opacity=".55" stroke-linecap="round"/>
+  <path d="M1,8 Q12,1 23,8" stroke="var(--fur-stripe)" stroke-width="1" fill="none" opacity=".35" stroke-linecap="round"/>
+</svg>`;
+
+/* Build one cat's HTML */
+function buildCatHTML(breedIdx, teamIdx) {
+  const b = CAT_BREEDS[breedIdx % CAT_BREEDS.length];
+  const cssVars = Object.entries(b).map(([k,v])=>`${k}:${v}`).join(';');
+  const collarColor = b['--collar-col'];
+
+  return `
+  <div class="cat-bubble" id="bub-${teamIdx}"></div>
+  <div class="cat-body-wrap walk" id="bw-${teamIdx}" style="${cssVars}">
+    <!-- Ears (behind head, z:1) -->
+    <div class="cat-ear L" id="earL-${teamIdx}"></div>
+    <div class="cat-ear R" id="earR-${teamIdx}"></div>
+    <!-- Tail (behind body, z:1) -->
+    <div class="cat-tail tail-wag" id="tail-${teamIdx}">
+      <svg width="30" height="56" viewBox="0 0 30 56" style="overflow:visible">
+        <path d="M15,2 Q-2,14 3,30 Q7,44 15,53 Q23,44 27,30 Q32,14 15,2Z"
+              fill="var(--fur-body)" style="fill:unset;"/>
+        <!-- Use CSS variable carefully with inline style -->
+      </svg>
+    </div>
+    <!-- Body -->
+    <div class="cat-bod"></div>
+    <!-- Collar -->
+    <div class="cat-collar" style="background:${collarColor};--collar-col:${collarColor};"></div>
+    <!-- Head -->
+    <div class="cat-head" id="head-${teamIdx}"></div>
+    <!-- Face (eyes, nose, whiskers, mouth) -->
+    <div class="cat-face mood-normal" id="face-${teamIdx}">
+      <!-- Forehead brow lines (grumpy) -->
+      <div class="brow-lines" id="brow-${teamIdx}">${BROW_SVG}</div>
+      <!-- Eyes -->
+      <div class="eye-wrap L" id="eyeL-${teamIdx}">
+        <div class="eye-sclera">
+          <div class="eye-iris"></div>
+          <div class="eye-pupil"></div>
+          <div class="eye-shine"></div>
+          <div class="eye-shine2"></div>
+          <div class="eye-lid"></div>
+        </div>
+      </div>
+      <div class="eye-wrap R" id="eyeR-${teamIdx}">
+        <div class="eye-sclera">
+          <div class="eye-iris"></div>
+          <div class="eye-pupil"></div>
+          <div class="eye-shine"></div>
+          <div class="eye-shine2"></div>
+          <div class="eye-lid"></div>
+        </div>
+      </div>
+      <!-- Nose -->
+      <div class="cat-nose" style="border-top-color:${b['--nose-col']};"></div>
+      <!-- Whiskers -->
+      <div class="whiskers">
+        <div class="wh l1"></div><div class="wh l2"></div><div class="wh l3"></div>
+        <div class="wh r1"></div><div class="wh r2"></div><div class="wh r3"></div>
+      </div>
+      <!-- Mouth -->
+      <div class="cat-mouth" id="mouth-${teamIdx}">
+        <svg viewBox="0 0 24 12" width="24" height="12">${MOOD_MOUTH.normal}</svg>
+      </div>
+      <!-- Tongue -->
+      <div class="cat-tongue"></div>
+      <!-- Tears -->
+      <div class="tear L"></div>
+      <div class="tear R"></div>
+      <!-- Cheek blush -->
+      <div class="blush L"></div>
+      <div class="blush R"></div>
+    </div>
+    <!-- Paws -->
+    <div class="cat-paws">
+      <div class="paw"></div>
+      <div class="paw"></div>
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════════════
+   CAT ACTOR CLASS — manages one cat's behaviour
+════════════════════════════════════════════════ */
+const SAD_PHRASES   = ['T_T','sniff...','no fair!','please...','TT','*sob*','why...'];
+const BULLY_PHRASES = ['hehe~','too slow!','my turf!','bow down!','easy~','gotcha!'];
+const IDLE_PHRASES  = ['meow~','purr...','zz...','nya~','*yawn*','=^.^='];
+const HAPPY_PHRASES = ['got it!','yay!','nice!','✿','boom!','♪'];
+
+class CatActor {
+  constructor(teamIdx, wrap) {
+    this.idx    = teamIdx;
+    this.wrap   = wrap;
+    this.x      = 15 + teamIdx * 18;  // % relative to wrap
+    this.y      = 50;
+    this.mood   = 'normal';
+    this.anim   = 'walk';
+    this.facing = 1;
+    this._moveTimer   = null;
+    this._bubbleTimer = null;
+    this._idleTimer   = null;
+
+    // Build DOM
+    this.el = document.createElement('div');
+    this.el.className = 'cat-actor';
+    this.el.innerHTML = buildCatHTML(teamIdx, teamIdx);
+    wrap.appendChild(this.el);
+
+    // Fix tail SVG fill using CSS (can't use var() in SVG fill attr directly)
+    const tailPath = this.el.querySelector('.cat-tail path');
+    if(tailPath) {
+      const bd = CAT_BREEDS[teamIdx % CAT_BREEDS.length];
+      // extract first colour from gradient
+      const match = bd['--fur-body'].match(/#[0-9a-fA-F]{3,8}/g);
+      if(match) tailPath.setAttribute('fill', match[1]||match[0]);
+      tailPath.setAttribute('stroke', match? (match[2]||match[0]) : '#888');
+      tailPath.setAttribute('stroke-width', '0.8');
+      tailPath.setAttribute('opacity', '0.4');
+    }
+
+    this.bwrap  = this.el.querySelector(`#bw-${teamIdx}`);
+    this.face   = this.el.querySelector(`#face-${teamIdx}`);
+    this.tail   = this.el.querySelector(`#tail-${teamIdx}`);
+    this.mouth  = this.el.querySelector(`#mouth-${teamIdx}`);
+    this.bubble = this.el.querySelector(`#bub-${teamIdx}`);
+
+    this._place(this.x, this.y);
+    this._scheduleMove();
+  }
+
+  /* ── Position (% of wrap) ── */
+  _place(px, py) {
+    const rect = this.wrap.getBoundingClientRect();
+    if(!rect.width) return;
+    const lx = Math.max(0, Math.min(rect.width  - 80, (px/100)*rect.width  - 40));
+    const ly = Math.max(0, Math.min(rect.height - 100,(py/100)*rect.height - 80));
+    this.el.style.left = lx + 'px';
+    this.el.style.top  = ly + 'px';
+  }
+
+  moveTo(px, py) {
+    // Facing direction
+    const dx = px - this.x;
+    this.facing = dx >= 0 ? 1 : -1;
+    this.el.classList.toggle('flipped-x', this.facing < 0);
+
+    // Z-index based on vertical position:
+    // y < 30%  → behind cards (cards z:5, cat z:3)
+    // y >= 30% → in front of cards (cat z:8)
+    const behindCards = py < 32 && Math.random() < 0.6;
+    this.el.classList.toggle('behind-cards', behindCards);
+    this.el.style.zIndex = behindCards ? '3' : '8';
+
+    this.x = px;
+    this.y = py;
+    this._place(px, py);
+  }
+
+  setMood(mood) {
+    if(this.mood === mood) return;
+    this.mood = mood;
+    ['mood-normal','mood-calm','mood-sad','mood-grumpy','mood-tongue']
+      .forEach(c => this.face.classList.remove(c));
+    this.face.classList.add('mood-' + mood);
+    // Update mouth SVG
+    if(this.mouth) this.mouth.querySelector('svg').innerHTML = MOOD_MOUTH[mood] || MOOD_MOUTH.normal;
+  }
+
+  setAnim(anim) {
+    if(this.anim === anim) return;
+    this.anim = anim;
+    ['walk','idle','peek','happy','sad']
+      .forEach(c => this.bwrap.classList.remove(c));
+    this.bwrap.classList.add(anim);
+    // Tail animation
+    this.tail.classList.remove('tail-wag','tail-droop','tail-puff');
+    if(anim === 'sad' || anim === 'peek') this.tail.classList.add('tail-droop');
+    else if(anim === 'happy') this.tail.classList.add('tail-puff');
+    else this.tail.classList.add('tail-wag');
+  }
+
+  showBubble(text, dur = 2500) {
+    clearTimeout(this._bubbleTimer);
+    this.bubble.textContent = text;
+    this.bubble.classList.add('show');
+    this._bubbleTimer = setTimeout(() => this.bubble.classList.remove('show'), dur);
+  }
+
+  /* ── Autonomous roaming AI ── */
+  _scheduleMove() {
+    // Slow, naturalistic movement: 3.5–8 second pauses
+    const delay = 3500 + Math.random() * 4500;
+    this._moveTimer = setTimeout(() => this._doMove(), delay);
+  }
+
+  _doMove() {
+    if(!this.el.isConnected) return;
+
+    // Pick destination with behavioural weight
+    const roll = Math.random();
+    let nx, ny;
+
+    if(roll < 0.12) {
+      // Linger on left edge
+      nx = 2 + Math.random() * 8;
+      ny = 20 + Math.random() * 60;
+    } else if(roll < 0.24) {
+      // Linger on right edge
+      nx = 90 + Math.random() * 8;
+      ny = 20 + Math.random() * 60;
+    } else if(roll < 0.36) {
+      // Peek up from bottom
+      nx = 15 + Math.random() * 70;
+      ny = 78 + Math.random() * 18;
+    } else if(roll < 0.50) {
+      // Hide high up behind cards
+      nx = 20 + Math.random() * 60;
+      ny = 6 + Math.random() * 22;
+    } else {
+      // General board roaming
+      nx = 8 + Math.random() * 84;
+      ny = 18 + Math.random() * 68;
+    }
+
+    // Start walking
+    this.setAnim('walk');
+    this.moveTo(nx, ny);
+
+    // Random idle bubble while walking
+    if(Math.random() < 0.20 && this.mood === 'normal') {
+      setTimeout(() => this.showBubble(IDLE_PHRASES[Math.floor(Math.random()*IDLE_PHRASES.length)]), 900);
+    }
+
+    // Switch to idle after arriving (transition is ~4s)
+    clearTimeout(this._idleTimer);
+    this._idleTimer = setTimeout(() => {
+      if(this.anim === 'walk') {
+        const isHiding = ny < 28;
+        this.setAnim(isHiding ? 'peek' : 'idle');
+      }
+    }, 4200);
+
+    this._scheduleMove();
+  }
+
+  celebrate() {
+    this.setAnim('happy');
+    this.setMood('normal');
+    this.showBubble(HAPPY_PHRASES[Math.floor(Math.random()*HAPPY_PHRASES.length)], 1800);
+    clearTimeout(this._idleTimer);
+    this._idleTimer = setTimeout(() => {
+      if(this.el.isConnected) { this.setAnim('idle'); updateCatEmotions(); }
+    }, 2000);
+  }
+
+  becomeSad() {
+    this.setMood('sad');
+    this.setAnim('sad');
+    this.showBubble(SAD_PHRASES[Math.floor(Math.random()*SAD_PHRASES.length)], 3000);
+  }
+
+  becomeBully(targetCat) {
+    const mood = Math.random() < 0.5 ? 'grumpy' : 'tongue';
+    this.setMood(mood);
+    this.setAnim('walk');
+    this.showBubble(BULLY_PHRASES[Math.floor(Math.random()*BULLY_PHRASES.length)], 2600);
+    // Walk toward the loser
+    if(targetCat) {
+      const tx = Math.max(5, Math.min(90, targetCat.x + (Math.random()*18-9)));
+      const ty = Math.max(12, Math.min(85, targetCat.y + (Math.random()*18-9)));
+      this.moveTo(tx, ty);
+    }
+  }
+
+  hidePeek() {
+    this.setMood('sad');
+    this.setAnim('peek');
+    // Shuffle to an edge or top
+    const side = Math.random();
+    let nx, ny;
+    if(side < 0.33)      { nx = 2+Math.random()*10;  ny = 15+Math.random()*30; }
+    else if(side < 0.66) { nx = 88+Math.random()*10; ny = 15+Math.random()*30; }
+    else                 { nx = 20+Math.random()*60;  ny = 5+Math.random()*18;  }
+    this.moveTo(nx, ny);
+    this.showBubble(SAD_PHRASES[Math.floor(Math.random()*SAD_PHRASES.length)], 2800);
+  }
+
+  resetToNormal() {
+    this.setMood('normal');
+    if(!['walk','idle'].includes(this.anim)) this.setAnim('idle');
+  }
+
+  destroy() {
+    clearTimeout(this._moveTimer);
+    clearTimeout(this._bubbleTimer);
+    clearTimeout(this._idleTimer);
+    this.el.remove();
+  }
+}
+
+/* ════════════════════════════════════════════════
+   CAT MANAGER
+════════════════════════════════════════════════ */
+let cats = [];
+
+function spawnCats(n) {
+  cats.forEach(c => c.destroy());
+  cats = [];
+  const wrap = document.getElementById('gw');
+  for(let i = 0; i < n; i++) {
+    const cat = new CatActor(i, wrap);
+    const angle = (i / n) * Math.PI * 2 - Math.PI/4;
+    const sx = Math.max(8, Math.min(88, 50 + 36*Math.cos(angle)));
+    const sy = Math.max(15, Math.min(82, 55 + 28*Math.sin(angle)));
+    cat.moveTo(sx, sy);
+    cat.setAnim('idle');
+    cats.push(cat);
+  }
+}
+
+function updateCatEmotions() {
+  if(!cats.length) return;
+  const maxS = Math.max(...scores);
+  const minS = Math.min(...scores);
+  const allSame = scores.every(s => s === scores[0]);
+  const loserIdx = allSame ? -1 : scores.indexOf(minS);
+
+  cats.forEach((cat, i) => {
+    const isLeader = !allSame && scores[i] === maxS;
+    const isLoser  = !allSame && scores[i] === minS;
+
+    if(isLeader) {
+      if(!['grumpy','tongue','walk'].includes(cat.mood)) {
+        cat.becomeBully(loserIdx >= 0 ? cats[loserIdx] : null);
+      }
+    } else if(isLoser) {
+      if(!['sad','peek'].includes(cat.anim)) {
+        Math.random() < 0.5 ? cat.hidePeek() : cat.becomeSad();
+      }
+    } else {
+      if(cat.mood !== 'normal') cat.resetToNormal();
+    }
+  });
+}
+
+/* ════════════════════════════════════════════════
+   CURRICULUM DATA
+════════════════════════════════════════════════ */
+const CURR={
+  1:{"Addition & Subtraction":{low:[{eq:"1+1",ans:"2"},{eq:"2+3",ans:"5"},{eq:"4+2",ans:"6"},{eq:"5−2",ans:"3"},{eq:"3+4",ans:"7"},{eq:"6−1",ans:"5"},{eq:"2+2",ans:"4"},{eq:"7−3",ans:"4"},{eq:"1+5",ans:"6"},{eq:"4−2",ans:"2"},{eq:"3+3",ans:"6"},{eq:"8−4",ans:"4"},{eq:"6+2",ans:"8"},{eq:"9−5",ans:"4"},{eq:"4+4",ans:"8"},{eq:"7−2",ans:"5"},{eq:"5+3",ans:"8"},{eq:"10−6",ans:"4"},{eq:"2+7",ans:"9"},{eq:"8−3",ans:"5"}],mid:[{eq:"5+6",ans:"11"},{eq:"8+4",ans:"12"},{eq:"12−5",ans:"7"},{eq:"9+3",ans:"12"},{eq:"14−6",ans:"8"},{eq:"7+7",ans:"14"},{eq:"15−8",ans:"7"},{eq:"6+8",ans:"14"},{eq:"13−5",ans:"8"},{eq:"9+5",ans:"14"},{eq:"16−9",ans:"7"},{eq:"8+7",ans:"15"},{eq:"17−8",ans:"9"},{eq:"6+9",ans:"15"},{eq:"18−9",ans:"9"},{eq:"7+8",ans:"15"},{eq:"11−4",ans:"7"},{eq:"10+5",ans:"15"},{eq:"13−7",ans:"6"},{eq:"9+9",ans:"18"}],high:[{eq:"19−7",ans:"12"},{eq:"11+9",ans:"20"},{eq:"20−8",ans:"12"},{eq:"14+6",ans:"20"},{eq:"17−9",ans:"8"},{eq:"13+7",ans:"20"},{eq:"15−6",ans:"9"},{eq:"12+8",ans:"20"},{eq:"18−9",ans:"9"},{eq:"16+4",ans:"20"},{eq:"19−11",ans:"8"},{eq:"11+8",ans:"19"},{eq:"20−3",ans:"17"},{eq:"15+5",ans:"20"},{eq:"18−7",ans:"11"},{eq:"13+6",ans:"19"},{eq:"20−4",ans:"16"},{eq:"14+5",ans:"19"},{eq:"17−6",ans:"11"},{eq:"16+3",ans:"19"}]},"Counting & Place Value":{low:[{eq:"Count 1,2,?",ans:"3"},{eq:"Count 4,5,?",ans:"6"},{eq:"Count 7,8,?",ans:"9"},{eq:"Count 3,4,?",ans:"5"},{eq:"Count 8,9,?",ans:"10"},{eq:"+1 of 5",ans:"6"},{eq:"+1 of 9",ans:"10"},{eq:"−1 of 4",ans:"3"},{eq:"−1 of 7",ans:"6"},{eq:"−1 of 10",ans:"9"},{eq:"2+0",ans:"2"},{eq:"0+5",ans:"5"},{eq:"Count 6,7,?",ans:"8"},{eq:"+1 of 3",ans:"4"},{eq:"−1 of 6",ans:"5"},{eq:"Tens in 10",ans:"1"},{eq:"Ones in 7",ans:"7"},{eq:"Count 9,10,?",ans:"11"},{eq:"+1 of 8",ans:"9"},{eq:"−1 of 2",ans:"1"}],mid:[{eq:"Tens in 13",ans:"1"},{eq:"Ones in 17",ans:"7"},{eq:"Tens in 20",ans:"2"},{eq:"Ones in 15",ans:"5"},{eq:"Count 15,16,?",ans:"17"},{eq:"Count 18,19,?",ans:"20"},{eq:"+1 of 15",ans:"16"},{eq:"−1 of 20",ans:"19"},{eq:"+2 of 14",ans:"16"},{eq:"−2 of 18",ans:"16"},{eq:"Tens in 19",ans:"1"},{eq:"Ones in 12",ans:"2"},{eq:"+1 of 17",ans:"18"},{eq:"−1 of 13",ans:"12"},{eq:"Count 12,13,?",ans:"14"},{eq:"Tens in 16",ans:"1"},{eq:"Ones in 20",ans:"0"},{eq:"+2 of 16",ans:"18"},{eq:"−2 of 15",ans:"13"},{eq:"Count 17,18,?",ans:"19"}],high:[{eq:"Tens in 30",ans:"3"},{eq:"Ones in 27",ans:"7"},{eq:"Tens in 45",ans:"4"},{eq:"Ones in 38",ans:"8"},{eq:"Count 28,29,?",ans:"30"},{eq:"+1 of 29",ans:"30"},{eq:"−1 of 40",ans:"39"},{eq:"Tens in 50",ans:"5"},{eq:"Ones in 41",ans:"1"},{eq:"Count 39,40,?",ans:"41"},{eq:"+2 of 38",ans:"40"},{eq:"−2 of 32",ans:"30"},{eq:"Tens in 23",ans:"2"},{eq:"Ones in 50",ans:"0"},{eq:"+1 of 49",ans:"50"},{eq:"−1 of 31",ans:"30"},{eq:"Tens in 34",ans:"3"},{eq:"Ones in 46",ans:"6"},{eq:"+2 of 27",ans:"29"},{eq:"−2 of 45",ans:"43"}]}},
+  2:{"Multiplication & Division":{low:[{eq:"2×1",ans:"2"},{eq:"2×2",ans:"4"},{eq:"2×3",ans:"6"},{eq:"2×4",ans:"8"},{eq:"2×5",ans:"10"},{eq:"5×1",ans:"5"},{eq:"5×2",ans:"10"},{eq:"5×3",ans:"15"},{eq:"5×4",ans:"20"},{eq:"5×5",ans:"25"},{eq:"10×1",ans:"10"},{eq:"10×2",ans:"20"},{eq:"10×3",ans:"30"},{eq:"10×4",ans:"40"},{eq:"10×5",ans:"50"},{eq:"2×6",ans:"12"},{eq:"5×6",ans:"30"},{eq:"10×6",ans:"60"},{eq:"2×7",ans:"14"},{eq:"5×7",ans:"35"}],mid:[{eq:"2×8",ans:"16"},{eq:"2×9",ans:"18"},{eq:"2×10",ans:"20"},{eq:"5×8",ans:"40"},{eq:"5×9",ans:"45"},{eq:"5×10",ans:"50"},{eq:"10×7",ans:"70"},{eq:"10×8",ans:"80"},{eq:"10×9",ans:"90"},{eq:"10×10",ans:"100"},{eq:"20÷2",ans:"10"},{eq:"15÷5",ans:"3"},{eq:"30÷10",ans:"3"},{eq:"16÷2",ans:"8"},{eq:"25÷5",ans:"5"},{eq:"40÷10",ans:"4"},{eq:"14÷2",ans:"7"},{eq:"35÷5",ans:"7"},{eq:"50÷10",ans:"5"},{eq:"18÷2",ans:"9"}],high:[{eq:"2×11",ans:"22"},{eq:"2×12",ans:"24"},{eq:"5×11",ans:"55"},{eq:"5×12",ans:"60"},{eq:"10×11",ans:"110"},{eq:"10×12",ans:"120"},{eq:"22÷2",ans:"11"},{eq:"24÷2",ans:"12"},{eq:"45÷5",ans:"9"},{eq:"55÷5",ans:"11"},{eq:"60÷5",ans:"12"},{eq:"110÷10",ans:"11"},{eq:"120÷10",ans:"12"},{eq:"2×0",ans:"0"},{eq:"5×0",ans:"0"},{eq:"12÷2",ans:"6"},{eq:"20÷5",ans:"4"},{eq:"70÷10",ans:"7"},{eq:"80÷10",ans:"8"},{eq:"90÷10",ans:"9"}]},"Addition & Subtraction":{low:[{eq:"20+10",ans:"30"},{eq:"35+10",ans:"45"},{eq:"50−10",ans:"40"},{eq:"22+5",ans:"27"},{eq:"38−5",ans:"33"},{eq:"45+3",ans:"48"},{eq:"67−4",ans:"63"},{eq:"31+6",ans:"37"},{eq:"54−3",ans:"51"},{eq:"42+7",ans:"49"},{eq:"23+10",ans:"33"},{eq:"56−10",ans:"46"},{eq:"14+20",ans:"34"},{eq:"75−20",ans:"55"},{eq:"31+30",ans:"61"},{eq:"68−30",ans:"38"},{eq:"40+15",ans:"55"},{eq:"63−21",ans:"42"},{eq:"52+14",ans:"66"},{eq:"87−25",ans:"62"}],mid:[{eq:"46+27",ans:"73"},{eq:"83−38",ans:"45"},{eq:"57+35",ans:"92"},{eq:"74−46",ans:"28"},{eq:"65+28",ans:"93"},{eq:"91−54",ans:"37"},{eq:"48+33",ans:"81"},{eq:"76−39",ans:"37"},{eq:"59+24",ans:"83"},{eq:"82−47",ans:"35"},{eq:"67+15",ans:"82"},{eq:"90−53",ans:"37"},{eq:"44+38",ans:"82"},{eq:"71−36",ans:"35"},{eq:"53+29",ans:"82"},{eq:"88−49",ans:"39"},{eq:"37+46",ans:"83"},{eq:"94−57",ans:"37"},{eq:"62+19",ans:"81"},{eq:"85−48",ans:"37"}],high:[{eq:"128+45",ans:"173"},{eq:"204−67",ans:"137"},{eq:"165+78",ans:"243"},{eq:"300−84",ans:"216"},{eq:"149+93",ans:"242"},{eq:"251−76",ans:"175"},{eq:"187+56",ans:"243"},{eq:"320−95",ans:"225"},{eq:"136+87",ans:"223"},{eq:"400−163",ans:"237"},{eq:"174+69",ans:"243"},{eq:"285−98",ans:"187"},{eq:"143+89",ans:"232"},{eq:"350−127",ans:"223"},{eq:"162+79",ans:"241"},{eq:"270−84",ans:"186"},{eq:"155+68",ans:"223"},{eq:"316−79",ans:"237"},{eq:"148+75",ans:"223"},{eq:"290−53",ans:"237"}]}},
+  3:{"Multiplication Tables":{low:[{eq:"3×1",ans:"3"},{eq:"3×2",ans:"6"},{eq:"3×3",ans:"9"},{eq:"3×4",ans:"12"},{eq:"3×5",ans:"15"},{eq:"4×1",ans:"4"},{eq:"4×2",ans:"8"},{eq:"4×3",ans:"12"},{eq:"4×4",ans:"16"},{eq:"4×5",ans:"20"},{eq:"8×1",ans:"8"},{eq:"8×2",ans:"16"},{eq:"8×3",ans:"24"},{eq:"8×4",ans:"32"},{eq:"8×5",ans:"40"},{eq:"3×6",ans:"18"},{eq:"4×6",ans:"24"},{eq:"8×6",ans:"48"},{eq:"3×7",ans:"21"},{eq:"4×7",ans:"28"}],mid:[{eq:"3×8",ans:"24"},{eq:"3×9",ans:"27"},{eq:"3×10",ans:"30"},{eq:"4×8",ans:"32"},{eq:"4×9",ans:"36"},{eq:"4×10",ans:"40"},{eq:"8×7",ans:"56"},{eq:"8×8",ans:"64"},{eq:"8×9",ans:"72"},{eq:"8×10",ans:"80"},{eq:"24÷3",ans:"8"},{eq:"36÷4",ans:"9"},{eq:"72÷8",ans:"9"},{eq:"27÷3",ans:"9"},{eq:"32÷4",ans:"8"},{eq:"64÷8",ans:"8"},{eq:"21÷3",ans:"7"},{eq:"28÷4",ans:"7"},{eq:"56÷8",ans:"7"},{eq:"18÷3",ans:"6"}],high:[{eq:"3×11",ans:"33"},{eq:"3×12",ans:"36"},{eq:"4×11",ans:"44"},{eq:"4×12",ans:"48"},{eq:"8×11",ans:"88"},{eq:"8×12",ans:"96"},{eq:"33÷3",ans:"11"},{eq:"36÷3",ans:"12"},{eq:"44÷4",ans:"11"},{eq:"48÷4",ans:"12"},{eq:"88÷8",ans:"11"},{eq:"96÷8",ans:"12"},{eq:"3×4×2",ans:"24"},{eq:"4×2×3",ans:"24"},{eq:"8×3×0",ans:"0"},{eq:"24÷8×3",ans:"9"},{eq:"36÷4×2",ans:"18"},{eq:"3×4+8",ans:"20"},{eq:"8×4−12",ans:"20"},{eq:"3×8÷4",ans:"6"}]},"Fractions":{low:[{eq:"½ of 4",ans:"2"},{eq:"½ of 6",ans:"3"},{eq:"½ of 10",ans:"5"},{eq:"½ of 8",ans:"4"},{eq:"½ of 12",ans:"6"},{eq:"¼ of 4",ans:"1"},{eq:"¼ of 8",ans:"2"},{eq:"¼ of 12",ans:"3"},{eq:"¼ of 16",ans:"4"},{eq:"¼ of 20",ans:"5"},{eq:"⅓ of 3",ans:"1"},{eq:"⅓ of 6",ans:"2"},{eq:"⅓ of 9",ans:"3"},{eq:"⅓ of 12",ans:"4"},{eq:"⅓ of 15",ans:"5"},{eq:"½ of 14",ans:"7"},{eq:"½ of 16",ans:"8"},{eq:"¼ of 24",ans:"6"},{eq:"⅓ of 18",ans:"6"},{eq:"¼ of 28",ans:"7"}],mid:[{eq:"¾ of 8",ans:"6"},{eq:"¾ of 12",ans:"9"},{eq:"¾ of 16",ans:"12"},{eq:"¾ of 20",ans:"15"},{eq:"⅔ of 6",ans:"4"},{eq:"⅔ of 9",ans:"6"},{eq:"⅔ of 12",ans:"8"},{eq:"⅔ of 15",ans:"10"},{eq:"⅔ of 18",ans:"12"},{eq:"¾ of 24",ans:"18"},{eq:"⅗ of 10",ans:"6"},{eq:"⅗ of 15",ans:"9"},{eq:"⅗ of 20",ans:"12"},{eq:"⅗ of 25",ans:"15"},{eq:"⅘ of 10",ans:"8"},{eq:"⅘ of 15",ans:"12"},{eq:"⅘ of 20",ans:"16"},{eq:"⅘ of 25",ans:"20"},{eq:"⅗ of 30",ans:"18"},{eq:"⅘ of 30",ans:"24"}],high:[{eq:"¼+¼",ans:"½"},{eq:"⅓+⅓",ans:"⅔"},{eq:"½−¼",ans:"¼"},{eq:"¾−¼",ans:"½"},{eq:"⅔−⅓",ans:"⅓"},{eq:"1−¾",ans:"¼"},{eq:"1−⅓",ans:"⅔"},{eq:"½+¼",ans:"¾"},{eq:"⅓+⅔",ans:"1"},{eq:"¼+¾",ans:"1"},{eq:"⅗+⅕",ans:"⅘"},{eq:"⅘−⅗",ans:"⅕"},{eq:"1−⅗",ans:"⅖"},{eq:"½+⅓",ans:"⅚"},{eq:"¾−½",ans:"¼"},{eq:"⅚−⅔",ans:"⅙"},{eq:"½+⅙",ans:"⅔"},{eq:"¾+⅛",ans:"⅞"},{eq:"⅞−¾",ans:"⅛"},{eq:"1−⅕",ans:"⅘"}]}},
+  4:{"Multiplication (×6,7,9)":{low:[{eq:"6×1",ans:"6"},{eq:"6×2",ans:"12"},{eq:"6×3",ans:"18"},{eq:"6×4",ans:"24"},{eq:"6×5",ans:"30"},{eq:"7×1",ans:"7"},{eq:"7×2",ans:"14"},{eq:"7×3",ans:"21"},{eq:"7×4",ans:"28"},{eq:"7×5",ans:"35"},{eq:"9×1",ans:"9"},{eq:"9×2",ans:"18"},{eq:"9×3",ans:"27"},{eq:"9×4",ans:"36"},{eq:"9×5",ans:"45"},{eq:"6×6",ans:"36"},{eq:"7×6",ans:"42"},{eq:"9×6",ans:"54"},{eq:"6×7",ans:"42"},{eq:"7×7",ans:"49"}],mid:[{eq:"6×8",ans:"48"},{eq:"6×9",ans:"54"},{eq:"6×10",ans:"60"},{eq:"7×8",ans:"56"},{eq:"7×9",ans:"63"},{eq:"7×10",ans:"70"},{eq:"9×7",ans:"63"},{eq:"9×8",ans:"72"},{eq:"9×9",ans:"81"},{eq:"9×10",ans:"90"},{eq:"42÷6",ans:"7"},{eq:"56÷7",ans:"8"},{eq:"81÷9",ans:"9"},{eq:"54÷6",ans:"9"},{eq:"63÷7",ans:"9"},{eq:"72÷9",ans:"8"},{eq:"48÷6",ans:"8"},{eq:"49÷7",ans:"7"},{eq:"63÷9",ans:"7"},{eq:"36÷6",ans:"6"}],high:[{eq:"6×11",ans:"66"},{eq:"6×12",ans:"72"},{eq:"7×11",ans:"77"},{eq:"7×12",ans:"84"},{eq:"9×11",ans:"99"},{eq:"9×12",ans:"108"},{eq:"66÷6",ans:"11"},{eq:"72÷6",ans:"12"},{eq:"77÷7",ans:"11"},{eq:"84÷7",ans:"12"},{eq:"99÷9",ans:"11"},{eq:"108÷9",ans:"12"},{eq:"9×6÷2",ans:"27"},{eq:"7×6−12",ans:"30"},{eq:"9×4×2",ans:"72"},{eq:"6×7+6",ans:"48"},{eq:"9×9−1",ans:"80"},{eq:"7×8−7",ans:"49"},{eq:"6×9+6",ans:"60"},{eq:"6×7×0",ans:"0"}]},"Place Value (10,000s)":{low:[{eq:"1,000×4",ans:"4,000"},{eq:"2,000+500",ans:"2,500"},{eq:"3,000−1,000",ans:"2,000"},{eq:"5,000+200",ans:"5,200"},{eq:"4,000+400",ans:"4,400"},{eq:"6,000−2,000",ans:"4,000"},{eq:"7,000+30",ans:"7,030"},{eq:"8,000−3,000",ans:"5,000"},{eq:"9,000+100",ans:"9,100"},{eq:"10,000÷10",ans:"1,000"},{eq:"1,000+1,000",ans:"2,000"},{eq:"3,000×2",ans:"6,000"},{eq:"4,000÷4",ans:"1,000"},{eq:"2,000×3",ans:"6,000"},{eq:"8,000÷2",ans:"4,000"},{eq:"6,000+4,000",ans:"10,000"},{eq:"10,000−4,000",ans:"6,000"},{eq:"1,000×7",ans:"7,000"},{eq:"9,000÷3",ans:"3,000"},{eq:"5,000−5,000",ans:"0"}],mid:[{eq:"3,456+1,000",ans:"4,456"},{eq:"7,820−1,000",ans:"6,820"},{eq:"4,605+100",ans:"4,705"},{eq:"9,340−100",ans:"9,240"},{eq:"2,738+10",ans:"2,748"},{eq:"5,191−10",ans:"5,181"},{eq:"6,200+800",ans:"7,000"},{eq:"8,400−400",ans:"8,000"},{eq:"3,750+250",ans:"4,000"},{eq:"7,600−600",ans:"7,000"},{eq:"4,500×2",ans:"9,000"},{eq:"6,000÷3",ans:"2,000"},{eq:"5,000+3,500",ans:"8,500"},{eq:"9,000−4,500",ans:"4,500"},{eq:"2,500×2",ans:"5,000"},{eq:"8,000÷4",ans:"2,000"},{eq:"1,250×4",ans:"5,000"},{eq:"7,500+2,500",ans:"10,000"},{eq:"3,600+3,400",ans:"7,000"},{eq:"4,800−2,400",ans:"2,400"}],high:[{eq:"12,456+3,000",ans:"15,456"},{eq:"20,000−7,500",ans:"12,500"},{eq:"15,300+4,700",ans:"20,000"},{eq:"18,600−9,300",ans:"9,300"},{eq:"24,000÷8",ans:"3,000"},{eq:"3,500×4",ans:"14,000"},{eq:"16,000÷4",ans:"4,000"},{eq:"11,111+8,889",ans:"20,000"},{eq:"25,000−12,500",ans:"12,500"},{eq:"5,000×3",ans:"15,000"},{eq:"18,000÷6",ans:"3,000"},{eq:"12,500×2",ans:"25,000"},{eq:"20,000−8,000",ans:"12,000"},{eq:"14,000+6,000",ans:"20,000"},{eq:"16,500−3,500",ans:"13,000"},{eq:"4,250×4",ans:"17,000"},{eq:"21,000÷7",ans:"3,000"},{eq:"13,750+6,250",ans:"20,000"},{eq:"17,000−4,250",ans:"12,750"},{eq:"2,500×6",ans:"15,000"}]}},
+  5:{"Long Multiplication":{low:[{eq:"12×10",ans:"120"},{eq:"23×10",ans:"230"},{eq:"34×10",ans:"340"},{eq:"45×10",ans:"450"},{eq:"56×10",ans:"560"},{eq:"12×20",ans:"240"},{eq:"13×30",ans:"390"},{eq:"14×20",ans:"280"},{eq:"15×20",ans:"300"},{eq:"21×40",ans:"840"},{eq:"11×11",ans:"121"},{eq:"12×11",ans:"132"},{eq:"13×11",ans:"143"},{eq:"14×11",ans:"154"},{eq:"15×11",ans:"165"},{eq:"22×11",ans:"242"},{eq:"23×11",ans:"253"},{eq:"32×11",ans:"352"},{eq:"41×11",ans:"451"},{eq:"13×20",ans:"260"}],mid:[{eq:"24×13",ans:"312"},{eq:"32×14",ans:"448"},{eq:"21×16",ans:"336"},{eq:"34×12",ans:"408"},{eq:"43×13",ans:"559"},{eq:"25×14",ans:"350"},{eq:"36×12",ans:"432"},{eq:"42×15",ans:"630"},{eq:"31×17",ans:"527"},{eq:"28×14",ans:"392"},{eq:"23×16",ans:"368"},{eq:"35×13",ans:"455"},{eq:"44×12",ans:"528"},{eq:"26×15",ans:"390"},{eq:"33×14",ans:"462"},{eq:"47×12",ans:"564"},{eq:"29×13",ans:"377"},{eq:"38×14",ans:"532"},{eq:"46×12",ans:"552"},{eq:"27×16",ans:"432"}],high:[{eq:"124×13",ans:"1,612"},{eq:"232×14",ans:"3,248"},{eq:"315×12",ans:"3,780"},{eq:"416×13",ans:"5,408"},{eq:"523×14",ans:"7,322"},{eq:"142×15",ans:"2,130"},{eq:"213×16",ans:"3,408"},{eq:"321×12",ans:"3,852"},{eq:"432×13",ans:"5,616"},{eq:"514×14",ans:"7,196"},{eq:"136×15",ans:"2,040"},{eq:"241×16",ans:"3,856"},{eq:"325×12",ans:"3,900"},{eq:"412×14",ans:"5,768"},{eq:"524×13",ans:"6,812"},{eq:"143×15",ans:"2,145"},{eq:"214×16",ans:"3,424"},{eq:"323×12",ans:"3,876"},{eq:"431×14",ans:"6,034"},{eq:"512×15",ans:"7,680"}]},"Decimals":{low:[{eq:"1.5+1.5",ans:"3"},{eq:"2.5+2.5",ans:"5"},{eq:"3.5−1.5",ans:"2"},{eq:"4.5+0.5",ans:"5"},{eq:"5.5−2.5",ans:"3"},{eq:"1.2+1.8",ans:"3"},{eq:"2.4+0.6",ans:"3"},{eq:"3.7+0.3",ans:"4"},{eq:"4.1+0.9",ans:"5"},{eq:"5.6−0.6",ans:"5"},{eq:"1.1+1.9",ans:"3"},{eq:"2.3+0.7",ans:"3"},{eq:"3.5+1.5",ans:"5"},{eq:"4.2−1.2",ans:"3"},{eq:"5.8−0.8",ans:"5"},{eq:"1.3+1.7",ans:"3"},{eq:"2.6−0.6",ans:"2"},{eq:"3.4+1.6",ans:"5"},{eq:"4.9−1.9",ans:"3"},{eq:"6.0−1.0",ans:"5"}],mid:[{eq:"3.6+2.7",ans:"6.3"},{eq:"5.8−2.3",ans:"3.5"},{eq:"4.7+3.6",ans:"8.3"},{eq:"7.2−4.5",ans:"2.7"},{eq:"6.4+1.8",ans:"8.2"},{eq:"9.1−3.7",ans:"5.4"},{eq:"5.3+4.9",ans:"10.2"},{eq:"8.6−5.4",ans:"3.2"},{eq:"3.14+2.86",ans:"6"},{eq:"5.75−2.25",ans:"3.5"},{eq:"6.38+1.62",ans:"8"},{eq:"8.90−4.40",ans:"4.5"},{eq:"2.55+3.45",ans:"6"},{eq:"7.60−3.10",ans:"4.5"},{eq:"4.25+3.75",ans:"8"},{eq:"9.80−4.30",ans:"5.5"},{eq:"3.67+2.33",ans:"6"},{eq:"6.50−2.00",ans:"4.5"},{eq:"4.5+5.7",ans:"10.2"},{eq:"7.8−2.9",ans:"4.9"}],high:[{eq:"12.34+8.76",ans:"21.1"},{eq:"25.60−13.85",ans:"11.75"},{eq:"34.72+15.28",ans:"50"},{eq:"47.50−23.75",ans:"23.75"},{eq:"56.38+13.62",ans:"70"},{eq:"68.90−34.45",ans:"34.45"},{eq:"75.25+24.75",ans:"100"},{eq:"89.60−44.80",ans:"44.8"},{eq:"43.75+31.25",ans:"75"},{eq:"92.50−46.25",ans:"46.25"},{eq:"1.5×4",ans:"6"},{eq:"2.5×4",ans:"10"},{eq:"3.5×2",ans:"7"},{eq:"0.5×8",ans:"4"},{eq:"1.25×4",ans:"5"},{eq:"2.5×6",ans:"15"},{eq:"0.25×8",ans:"2"},{eq:"1.5×6",ans:"9"},{eq:"0.75×4",ans:"3"},{eq:"1.25×8",ans:"10"}]}},
+  6:{"Fractions, Decimals & %":{low:[{eq:"50% of 80",ans:"40"},{eq:"25% of 60",ans:"15"},{eq:"10% of 90",ans:"9"},{eq:"50% of 120",ans:"60"},{eq:"25% of 80",ans:"20"},{eq:"10% of 70",ans:"7"},{eq:"50% of 200",ans:"100"},{eq:"25% of 40",ans:"10"},{eq:"10% of 150",ans:"15"},{eq:"50% of 300",ans:"150"},{eq:"75% of 40",ans:"30"},{eq:"75% of 80",ans:"60"},{eq:"75% of 100",ans:"75"},{eq:"75% of 120",ans:"90"},{eq:"75% of 200",ans:"150"},{eq:"20% of 60",ans:"12"},{eq:"20% of 80",ans:"16"},{eq:"20% of 100",ans:"20"},{eq:"20% of 150",ans:"30"},{eq:"20% of 200",ans:"40"}],mid:[{eq:"35% of 60",ans:"21"},{eq:"45% of 80",ans:"36"},{eq:"15% of 120",ans:"18"},{eq:"35% of 200",ans:"70"},{eq:"45% of 200",ans:"90"},{eq:"15% of 60",ans:"9"},{eq:"30% of 90",ans:"27"},{eq:"40% of 75",ans:"30"},{eq:"60% of 90",ans:"54"},{eq:"80% of 75",ans:"60"},{eq:"½ = ?%",ans:"50%"},{eq:"¼ = ?%",ans:"25%"},{eq:"¾ = ?%",ans:"75%"},{eq:"⅕ = ?%",ans:"20%"},{eq:"⅖ = ?%",ans:"40%"},{eq:"⅗ = ?%",ans:"60%"},{eq:"⅘ = ?%",ans:"80%"},{eq:"⅛ = ?%",ans:"12.5%"},{eq:"⅜ = ?%",ans:"37.5%"},{eq:"⅝ = ?%",ans:"62.5%"}],high:[{eq:"35% of 480",ans:"168"},{eq:"65% of 320",ans:"208"},{eq:"12.5% of 160",ans:"20"},{eq:"37.5% of 240",ans:"90"},{eq:"62.5% of 480",ans:"300"},{eq:"87.5% of 320",ans:"280"},{eq:"17.5% of 200",ans:"35"},{eq:"22.5% of 400",ans:"90"},{eq:"42.5% of 200",ans:"85"},{eq:"67.5% of 400",ans:"270"},{eq:"15% of 340",ans:"51"},{eq:"35% of 140",ans:"49"},{eq:"45% of 220",ans:"99"},{eq:"55% of 180",ans:"99"},{eq:"65% of 160",ans:"104"},{eq:"85% of 120",ans:"102"},{eq:"18% of 150",ans:"27"},{eq:"32% of 150",ans:"48"},{eq:"48% of 125",ans:"60"},{eq:"72% of 125",ans:"90"}]},"Ratio & Proportion":{low:[{eq:"1:2→3:?",ans:"6"},{eq:"1:3→2:?",ans:"6"},{eq:"2:4=1:?",ans:"2"},{eq:"3:6=1:?",ans:"2"},{eq:"4:8=1:?",ans:"2"},{eq:"1:5→3:?",ans:"15"},{eq:"2:6=1:?",ans:"3"},{eq:"3:9=1:?",ans:"3"},{eq:"4:12=1:?",ans:"3"},{eq:"5:10=1:?",ans:"2"},{eq:"2:3→4:?",ans:"6"},{eq:"3:4→6:?",ans:"8"},{eq:"4:5→8:?",ans:"10"},{eq:"5:6→10:?",ans:"12"},{eq:"2:5→4:?",ans:"10"},{eq:"3:7→6:?",ans:"14"},{eq:"4:9→8:?",ans:"18"},{eq:"5:8→10:?",ans:"16"},{eq:"1:4→5:?",ans:"20"},{eq:"2:7→6:?",ans:"21"}],mid:[{eq:"Share 24 in 1:3",ans:"6&18"},{eq:"Share 30 in 1:2",ans:"10&20"},{eq:"Share 40 in 3:5",ans:"15&25"},{eq:"Share 48 in 1:3",ans:"12&36"},{eq:"Share 60 in 2:3",ans:"24&36"},{eq:"Ratio 2:3;25",ans:"10&15"},{eq:"Ratio 3:5;40",ans:"15&25"},{eq:"Ratio 1:4;30",ans:"6&24"},{eq:"Ratio 5:7;48",ans:"20&28"},{eq:"Ratio 3:7;50",ans:"15&35"},{eq:"Scale 1:100;5cm",ans:"5m"},{eq:"Scale 1:50;4cm",ans:"2m"},{eq:"Scale 1:200;3cm",ans:"6m"},{eq:"Scale 1:1000;2cm",ans:"20m"},{eq:"Scale 1:25;8cm",ans:"2m"},{eq:"Scale 1:500;6cm",ans:"30m"},{eq:"3:5;3p=18",ans:"5p=30"},{eq:"2:7;2p=12",ans:"7p=42"},{eq:"4:5;5p=35",ans:"4p=28"},{eq:"3:8;8p=48",ans:"3p=18"}],high:[{eq:"x:15=4:5",ans:"12"},{eq:"6:x=3:7",ans:"14"},{eq:"x:21=2:3",ans:"14"},{eq:"8:x=4:9",ans:"18"},{eq:"x:35=3:5",ans:"21"},{eq:"9:x=3:8",ans:"24"},{eq:"x:28=5:7",ans:"20"},{eq:"12:x=3:5",ans:"20"},{eq:"x:42=4:7",ans:"24"},{eq:"15:x=3:7",ans:"35"},{eq:"60km/h×3h",ans:"180km"},{eq:"80km/h×2.5h",ans:"200km"},{eq:"180km÷60km/h",ans:"3h"},{eq:"90km/h×4h",ans:"360km"},{eq:"200km÷80km/h",ans:"2.5h"},{eq:"45km/h×4h",ans:"180km"},{eq:"360km÷90km/h",ans:"4h"},{eq:"50km/h×3h",ans:"150km"},{eq:"150km÷50km/h",ans:"3h"},{eq:"70km/h×2h",ans:"140km"}]}},
+  7:{"Algebra Basics":{low:[{eq:"x+3=7",ans:"x=4"},{eq:"x−2=5",ans:"x=7"},{eq:"x+5=9",ans:"x=4"},{eq:"x−4=6",ans:"x=10"},{eq:"x+7=12",ans:"x=5"},{eq:"x−8=3",ans:"x=11"},{eq:"x+6=15",ans:"x=9"},{eq:"x−5=8",ans:"x=13"},{eq:"x+9=16",ans:"x=7"},{eq:"x−3=12",ans:"x=15"},{eq:"2x=8",ans:"x=4"},{eq:"3x=9",ans:"x=3"},{eq:"4x=12",ans:"x=3"},{eq:"5x=20",ans:"x=4"},{eq:"6x=18",ans:"x=3"},{eq:"2x=14",ans:"x=7"},{eq:"3x=21",ans:"x=7"},{eq:"4x=28",ans:"x=7"},{eq:"5x=35",ans:"x=7"},{eq:"7x=49",ans:"x=7"}],mid:[{eq:"2x+1=7",ans:"x=3"},{eq:"3x−2=7",ans:"x=3"},{eq:"4x+3=15",ans:"x=3"},{eq:"5x−4=11",ans:"x=3"},{eq:"2x+5=13",ans:"x=4"},{eq:"3x−6=6",ans:"x=4"},{eq:"4x+2=18",ans:"x=4"},{eq:"6x−8=16",ans:"x=4"},{eq:"2x+3=13",ans:"x=5"},{eq:"3x−5=10",ans:"x=5"},{eq:"4x+4=24",ans:"x=5"},{eq:"5x−9=16",ans:"x=5"},{eq:"x/2=6",ans:"x=12"},{eq:"x/3=5",ans:"x=15"},{eq:"x/4=4",ans:"x=16"},{eq:"x/5=3",ans:"x=15"},{eq:"x/2+1=7",ans:"x=12"},{eq:"x/3−2=3",ans:"x=15"},{eq:"x/4+3=7",ans:"x=16"},{eq:"x/5−1=2",ans:"x=15"}],high:[{eq:"2x+3=x+8",ans:"x=5"},{eq:"3x−4=x+6",ans:"x=5"},{eq:"2(x+3)=14",ans:"x=4"},{eq:"3(x−2)=9",ans:"x=5"},{eq:"4(x+1)=20",ans:"x=4"},{eq:"5(x−3)=10",ans:"x=5"},{eq:"2(x+5)=18",ans:"x=4"},{eq:"3(2x−1)=15",ans:"x=3"},{eq:"2(3x+1)=20",ans:"x=3"},{eq:"x²=9",ans:"x=3"},{eq:"x²=16",ans:"x=4"},{eq:"x²=25",ans:"x=5"},{eq:"x²=36",ans:"x=6"},{eq:"x²=49",ans:"x=7"},{eq:"x²=64",ans:"x=8"},{eq:"x²=81",ans:"x=9"},{eq:"x²=100",ans:"x=10"},{eq:"x²=121",ans:"x=11"},{eq:"x²=144",ans:"x=12"},{eq:"4x+1=2x+11",ans:"x=5"}]},"Angles & Geometry":{low:[{eq:"∠ on line",ans:"180°"},{eq:"∠ at point",ans:"360°"},{eq:"Right angle",ans:"90°"},{eq:"Triangle ∠s",ans:"180°"},{eq:"Quad sum",ans:"360°"},{eq:"Vert.opp. 40°",ans:"40°"},{eq:"90°−35°",ans:"55°"},{eq:"180°−120°",ans:"60°"},{eq:"360°−270°",ans:"90°"},{eq:"180°−65°",ans:"115°"},{eq:"Comp. 30°",ans:"60°"},{eq:"Supp. 45°",ans:"135°"},{eq:"Comp. 60°",ans:"30°"},{eq:"Supp. 100°",ans:"80°"},{eq:"Comp. 75°",ans:"15°"},{eq:"Supp. 150°",ans:"30°"},{eq:"Comp. 25°",ans:"65°"},{eq:"Supp. 70°",ans:"110°"},{eq:"180°−95°",ans:"85°"},{eq:"360°−310°",ans:"50°"}],mid:[{eq:"Equilateral int.∠",ans:"60°"},{eq:"Square int.∠",ans:"90°"},{eq:"Pentagon int.∠",ans:"108°"},{eq:"Hexagon int.∠",ans:"120°"},{eq:"3rd∠:70°,50°",ans:"60°"},{eq:"3rd∠:45°,95°",ans:"40°"},{eq:"3rd∠:30°,120°",ans:"30°"},{eq:"Isosc.base 50°",ans:"apex 80°"},{eq:"Isosc.apex 100°",ans:"base 40°"},{eq:"Co-int:65°",ans:"115°"},{eq:"Alt.∠:73°",ans:"73°"},{eq:"Corresp.:48°",ans:"48°"},{eq:"Co-int:112°",ans:"68°"},{eq:"Alt.∠:57°",ans:"57°"},{eq:"Reflex 40°",ans:"320°"},{eq:"Reflex 90°",ans:"270°"},{eq:"Reflex 150°",ans:"210°"},{eq:"Reflex 72°",ans:"288°"},{eq:"Reflex 135°",ans:"225°"},{eq:"Reflex 60°",ans:"300°"}],high:[{eq:"Pentagon ext.∠",ans:"72°"},{eq:"Hexagon ext.∠",ans:"60°"},{eq:"Octagon ext.∠",ans:"45°"},{eq:"Decagon ext.∠",ans:"36°"},{eq:"12-gon ext.∠",ans:"30°"},{eq:"Pentagon int.∠",ans:"108°"},{eq:"Hexagon int.∠",ans:"120°"},{eq:"Octagon int.∠",ans:"135°"},{eq:"Decagon int.∠",ans:"144°"},{eq:"12-gon int.∠",ans:"150°"},{eq:"Bearing N30°E",ans:"030°"},{eq:"Bearing N60°W",ans:"300°"},{eq:"Bearing S45°E",ans:"135°"},{eq:"Bearing S30°W",ans:"210°"},{eq:"Due South",ans:"180°"},{eq:"Back 060°",ans:"240°"},{eq:"Back 150°",ans:"330°"},{eq:"Back 270°",ans:"090°"},{eq:"Back 225°",ans:"045°"},{eq:"Back 315°",ans:"135°"}]}},
+  8:{"Linear Equations":{low:[{eq:"3x+5=14",ans:"x=3"},{eq:"4x−7=13",ans:"x=5"},{eq:"2x+9=19",ans:"x=5"},{eq:"5x−3=22",ans:"x=5"},{eq:"6x−4=26",ans:"x=5"},{eq:"2x+11=25",ans:"x=7"},{eq:"5x−8=27",ans:"x=7"},{eq:"3x+4=25",ans:"x=7"},{eq:"6x−5=37",ans:"x=7"},{eq:"4x+9=37",ans:"x=7"},{eq:"8x−7=49",ans:"x=7"},{eq:"2x+15=29",ans:"x=7"},{eq:"3x−2=19",ans:"x=7"},{eq:"4x+1=29",ans:"x=7"},{eq:"5x−4=31",ans:"x=7"},{eq:"6x+3=45",ans:"x=7"},{eq:"7x−5=44",ans:"x=7"},{eq:"2x+6=20",ans:"x=7"},{eq:"3x+0=21",ans:"x=7"},{eq:"9x−9=54",ans:"x=7"}],mid:[{eq:"3x+2=2x+7",ans:"x=5"},{eq:"5x−3=3x+9",ans:"x=6"},{eq:"3(x+2)=21",ans:"x=5"},{eq:"4(x−3)=20",ans:"x=8"},{eq:"5(x+1)=30",ans:"x=5"},{eq:"4(x+5)=32",ans:"x=3"},{eq:"x/3+4=7",ans:"x=9"},{eq:"x/2−5=3",ans:"x=16"},{eq:"x/4+3=7",ans:"x=16"},{eq:"x/5−2=4",ans:"x=30"},{eq:"2x/3=8",ans:"x=12"},{eq:"3x/4=9",ans:"x=12"},{eq:"5x/2=15",ans:"x=6"},{eq:"3x/5=9",ans:"x=15"},{eq:"4x/7=8",ans:"x=14"},{eq:"2x/5=6",ans:"x=15"},{eq:"5x/3=10",ans:"x=6"},{eq:"6x−5=4x+7",ans:"x=6"},{eq:"4x+1=2x+11",ans:"x=5"},{eq:"x/3+6=9",ans:"x=9"}],high:[{eq:"x²+5x+6=0",ans:"x=−2,−3"},{eq:"x²−7x+12=0",ans:"x=3,4"},{eq:"x²+2x−8=0",ans:"x=2,−4"},{eq:"x²−5x+6=0",ans:"x=2,3"},{eq:"x²+x−6=0",ans:"x=2,−3"},{eq:"x²−4x+4=0",ans:"x=2"},{eq:"x²+6x+9=0",ans:"x=−3"},{eq:"x²−9=0",ans:"x=±3"},{eq:"x²−16=0",ans:"x=±4"},{eq:"x²−25=0",ans:"x=±5"},{eq:"2x²−8=0",ans:"x=±2"},{eq:"3x²−27=0",ans:"x=±3"},{eq:"x²+4x+3=0",ans:"x=−1,−3"},{eq:"x²−6x+5=0",ans:"x=1,5"},{eq:"x²+3x−10=0",ans:"x=2,−5"},{eq:"x²−x−12=0",ans:"x=4,−3"},{eq:"x²+7x+10=0",ans:"x=−2,−5"},{eq:"x²−8x+15=0",ans:"x=3,5"},{eq:"x²+x−20=0",ans:"x=4,−5"},{eq:"x²−3x−18=0",ans:"x=6,−3"}]},"Area & Volume":{low:[{eq:"Area 5×4",ans:"20cm²"},{eq:"Area 6×3",ans:"18cm²"},{eq:"Area △b=6,h=4",ans:"12cm²"},{eq:"Area △b=8,h=5",ans:"20cm²"},{eq:"Perim 5×4",ans:"18cm"},{eq:"Perim 6×3",ans:"18cm"},{eq:"Perim 7×5",ans:"24cm"},{eq:"Vol 3×4×5",ans:"60cm³"},{eq:"Vol 2×5×6",ans:"60cm³"},{eq:"Vol 4×4×4",ans:"64cm³"},{eq:"Vol 3×3×5",ans:"45cm³"},{eq:"Vol 2×4×7",ans:"56cm³"},{eq:"Area 8×4",ans:"32cm²"},{eq:"Area 9×3",ans:"27cm²"},{eq:"Perim 8×4",ans:"24cm"},{eq:"Perim 9×3",ans:"24cm"},{eq:"Area △b=12,h=4",ans:"24cm²"},{eq:"Area △b=14,h=3",ans:"21cm²"},{eq:"Area 7×5",ans:"35cm²"},{eq:"Vol 1×6×8",ans:"48cm³"}],mid:[{eq:"Area⊙r=5",ans:"78.5cm²"},{eq:"Area⊙r=7",ans:"153.9cm²"},{eq:"Area⊙r=3",ans:"28.3cm²"},{eq:"Area⊙r=4",ans:"50.3cm²"},{eq:"Circ r=5",ans:"31.4cm"},{eq:"Circ r=7",ans:"44.0cm"},{eq:"Circ r=3",ans:"18.8cm"},{eq:"Circ r=10",ans:"62.8cm"},{eq:"Parall b=8,h=5",ans:"40cm²"},{eq:"Trap a=6,b=10,h=4",ans:"32cm²"},{eq:"Vol cyl r=3,h=5",ans:"141.4cm³"},{eq:"Vol cyl r=4,h=6",ans:"301.6cm³"},{eq:"Vol prism A=12,l=7",ans:"84cm³"},{eq:"Vol prism A=20,l=5",ans:"100cm³"},{eq:"SA 4×4×4",ans:"96cm²"},{eq:"SA 3×5×2",ans:"62cm²"},{eq:"SA 2×4×6",ans:"88cm²"},{eq:"SA 3×3×5",ans:"78cm²"},{eq:"SA 5×5×5",ans:"150cm²"},{eq:"Vol prism A=15,l=8",ans:"120cm³"}],high:[{eq:"Vol sphere r=3",ans:"113.1cm³"},{eq:"Vol sphere r=4",ans:"268.1cm³"},{eq:"Vol sphere r=5",ans:"523.6cm³"},{eq:"SA sphere r=3",ans:"113.1cm²"},{eq:"SA sphere r=4",ans:"201.1cm²"},{eq:"Vol cone r=3,h=4",ans:"37.7cm³"},{eq:"Vol cone r=5,h=6",ans:"157.1cm³"},{eq:"SA cone r=3,l=5",ans:"75.4cm²"},{eq:"SA cone r=4,l=6",ans:"125.7cm²"},{eq:"Vol pyr b=6²,h=9",ans:"108cm³"},{eq:"SA cyl r=3,h=8",ans:"207.3cm²"},{eq:"SA cyl r=5,h=4",ans:"282.7cm²"},{eq:"Sector 90°,r=4",ans:"12.6cm²"},{eq:"Arc 90°,r=4",ans:"6.3cm"},{eq:"Sector 60°,r=6",ans:"18.8cm²"},{eq:"Arc 60°,r=6",ans:"6.3cm"},{eq:"Sector 120°,r=3",ans:"9.4cm²"},{eq:"Arc 270°,r=4",ans:"18.8cm"},{eq:"Vol pyr b=4²,h=6",ans:"32cm³"},{eq:"SA sphere r=5",ans:"314.2cm²"}]}},
+  9:{"Pythagoras & Trig":{low:[{eq:"Hyp:3,4",ans:"5"},{eq:"Hyp:6,8",ans:"10"},{eq:"Hyp:5,12",ans:"13"},{eq:"Hyp:8,15",ans:"17"},{eq:"Hyp:7,24",ans:"25"},{eq:"Hyp:9,12",ans:"15"},{eq:"Leg:h=10,6",ans:"8"},{eq:"Leg:h=13,5",ans:"12"},{eq:"Leg:h=17,8",ans:"15"},{eq:"Leg:h=25,7",ans:"24"},{eq:"3²+4²",ans:"25"},{eq:"5²+12²",ans:"169"},{eq:"6²+8²",ans:"100"},{eq:"√25",ans:"5"},{eq:"√169",ans:"13"},{eq:"√100",ans:"10"},{eq:"Leg:h=15,9",ans:"12"},{eq:"Leg:h=26,10",ans:"24"},{eq:"Hyp:9,40",ans:"41"},{eq:"Hyp:20,21",ans:"29"}],mid:[{eq:"sin 30°",ans:"0.5"},{eq:"cos 60°",ans:"0.5"},{eq:"tan 45°",ans:"1"},{eq:"sin 90°",ans:"1"},{eq:"cos 0°",ans:"1"},{eq:"sin 45°",ans:"√2/2"},{eq:"cos 30°",ans:"√3/2"},{eq:"tan 30°",ans:"1/√3"},{eq:"sin 60°",ans:"√3/2"},{eq:"cos 45°",ans:"√2/2"},{eq:"sin⁻¹(0.5)",ans:"30°"},{eq:"cos⁻¹(0.5)",ans:"60°"},{eq:"tan⁻¹(1)",ans:"45°"},{eq:"sin⁻¹(1)",ans:"90°"},{eq:"cos⁻¹(1)",ans:"0°"},{eq:"h=10,sinθ=0.6",ans:"opp=6"},{eq:"h=10,cosθ=0.8",ans:"adj=8"},{eq:"adj=6,tanθ=0.75",ans:"opp=4.5"},{eq:"opp=5,h=13",ans:"sinθ≈0.385"},{eq:"adj=4,h=5",ans:"cosθ=0.8"}],high:[{eq:"sin30°(exact)",ans:"½"},{eq:"cos45°(exact)",ans:"√2/2"},{eq:"tan60°(exact)",ans:"√3"},{eq:"sin60°(exact)",ans:"√3/2"},{eq:"cos30°(exact)",ans:"√3/2"},{eq:"3D Pyth:3,4,12",ans:"13"},{eq:"3D Pyth:6,6,7",ans:"11"},{eq:"A△a=5,b=7,C=60°",ans:"15.2cm²"},{eq:"A△a=8,b=6,C=30°",ans:"12cm²"},{eq:"Sine rule a/sinA",ans:"=b/sinB"},{eq:"Cosine a²=",ans:"b²+c²−2bc·cosA"},{eq:"cosA=(9+25−16)/30",ans:"A=70.5°"},{eq:"Bearing N45°E",ans:"045°"},{eq:"Bearing S60°W",ans:"240°"},{eq:"Back 060°",ans:"240°"},{eq:"Back 150°",ans:"330°"},{eq:"Hyp:12,16",ans:"20"},{eq:"Hyp:20,48",ans:"52"},{eq:"tan30°(exact)",ans:"1/√3"},{eq:"cos0°(exact)",ans:"1"}]},"Graphs & Functions":{low:[{eq:"y=2x,x=3",ans:"y=6"},{eq:"y=3x,x=4",ans:"y=12"},{eq:"y=x+5,x=3",ans:"y=8"},{eq:"y=x−4,x=9",ans:"y=5"},{eq:"y=2x+1,x=3",ans:"y=7"},{eq:"y=3x−2,x=4",ans:"y=10"},{eq:"y=x²,x=4",ans:"y=16"},{eq:"y=x²,x=5",ans:"y=25"},{eq:"y=x²+1,x=3",ans:"y=10"},{eq:"y=x²−4,x=3",ans:"y=5"},{eq:"Grad(0,1)(2,5)",ans:"m=2"},{eq:"Grad(0,3)(4,7)",ans:"m=1"},{eq:"y-int y=3x+5",ans:"5"},{eq:"y-int y=2x−3",ans:"−3"},{eq:"y-int y=x+7",ans:"7"},{eq:"y-int y=4x",ans:"0"},{eq:"Grad(1,3)(4,9)",ans:"m=2"},{eq:"Grad(2,4)(5,10)",ans:"m=2"},{eq:"y=x²−9,x=3",ans:"y=0"},{eq:"y=2x+1,x=0",ans:"y=1"}],mid:[{eq:"y=2x+3:m&c",ans:"m=2,c=3"},{eq:"y=−x+4:m&c",ans:"m=−1,c=4"},{eq:"y=½x−2:m&c",ans:"m=½,c=−2"},{eq:"Perp.m=2",ans:"−½"},{eq:"Perp.m=3",ans:"−⅓"},{eq:"Perp.m=−1",ans:"1"},{eq:"Perp.m=½",ans:"−2"},{eq:"x-int y=2x−6",ans:"x=3"},{eq:"x-int y=3x+9",ans:"x=−3"},{eq:"x-int y=4x−8",ans:"x=2"},{eq:"Midpt(2,4)(8,10)",ans:"(5,7)"},{eq:"Midpt(1,3)(7,9)",ans:"(4,6)"},{eq:"Midpt(0,6)(8,2)",ans:"(4,4)"},{eq:"Dist(0,0)(3,4)",ans:"5"},{eq:"Dist(1,1)(5,4)",ans:"5"},{eq:"Dist(0,0)(5,12)",ans:"13"},{eq:"∥y=2x+1,(0,3)",ans:"y=2x+3"},{eq:"∥y=3x−2,(0,5)",ans:"y=3x+5"},{eq:"x-int y=5x+10",ans:"x=−2"},{eq:"x-int y=6x−12",ans:"x=2"}],high:[{eq:"y=x²−5x+6 roots",ans:"x=2,3"},{eq:"y=x²+2x−3 roots",ans:"x=1,−3"},{eq:"Vertex y=x²−6x+8",ans:"(3,−1)"},{eq:"Vertex y=x²+4x+1",ans:"(−2,−3)"},{eq:"f(x)=2x+1;f(3)",ans:"7"},{eq:"f(x)=x²−1;f(4)",ans:"15"},{eq:"Inv f=2x+4",ans:"f⁻¹=½(x−4)"},{eq:"Inv f=3x−6",ans:"f⁻¹=⅓(x+6)"},{eq:"y=sinx at 0°",ans:"0"},{eq:"y=cosx at 0°",ans:"1"},{eq:"y=sinx at 90°",ans:"1"},{eq:"y=cosx at 180°",ans:"−1"},{eq:"sinx period",ans:"360°"},{eq:"cosx period",ans:"360°"},{eq:"tanx period",ans:"180°"},{eq:"y=2x²−8 roots",ans:"x=±2"},{eq:"Vertex (x−2)²+3",ans:"(2,3)"},{eq:"y=−x² reflect",ans:"x-axis"},{eq:"f∘g:g=2x,f=x+1",ans:"2x+1"},{eq:"Inv f=x/2+1",ans:"f⁻¹=2(x−1)"}]}},
+  10:{"Statistics & Probability":{low:[{eq:"P(head)",ans:"½"},{eq:"P(6 dice)",ans:"⅙"},{eq:"P(odd dice)",ans:"½"},{eq:"P(even dice)",ans:"½"},{eq:"P(>4 dice)",ans:"⅓"},{eq:"P(≤2 dice)",ans:"⅓"},{eq:"P(not 6)",ans:"⅚"},{eq:"Mean:2,4,6,8",ans:"5"},{eq:"Mean:3,5,7,9",ans:"6"},{eq:"Mean:1,3,5,7,9",ans:"5"},{eq:"Median:2,4,6,8",ans:"5"},{eq:"Median:1,3,5,7,9",ans:"5"},{eq:"Mode:2,3,3,4,5",ans:"3"},{eq:"Range:2,5,8,12",ans:"10"},{eq:"Range:3,7,11,15",ans:"12"},{eq:"Mean:10,20,30",ans:"20"},{eq:"Median:4,8,12",ans:"8"},{eq:"P(A)+P(A')=",ans:"1"},{eq:"P(tail)",ans:"½"},{eq:"P(prime dice)",ans:"½"}],mid:[{eq:"P(2H;2 tosses)",ans:"¼"},{eq:"P(HH or TT)",ans:"½"},{eq:"P(≥1H;2 tosses)",ans:"¾"},{eq:"P(2H;3 tosses)",ans:"⅜"},{eq:"Mean:Σfx/Σf",ans:"formula"},{eq:"Median class",ans:"n/2 th"},{eq:"Q1 position",ans:"n/4"},{eq:"Q3 position",ans:"3n/4"},{eq:"IQR=Q3−Q1",ans:"formula"},{eq:"Outlier>Q3+1.5IQR",ans:"formula"},{eq:"r=1 means",ans:"perfect+corr"},{eq:"r=0 means",ans:"no correlation"},{eq:"r=−1 means",ans:"perfect−corr"},{eq:"Histogram area=",ans:"frequency"},{eq:"Freq density=",ans:"freq÷class width"},{eq:"P(A∩B)indep.",ans:"P(A)×P(B)"},{eq:"P(A∪B)=",ans:"P(A)+P(B)−P(A∩B)"},{eq:"P(A|B)=",ans:"P(A∩B)/P(B)"},{eq:"E(X)=",ans:"Σx·P(x)"},{eq:"Std dev: spread of",ans:"data from mean"}],high:[{eq:"Normal 1σ",ans:"68%"},{eq:"Normal 2σ",ans:"95%"},{eq:"Normal 3σ",ans:"99.7%"},{eq:"Binom n=5,p=½,P(3)",ans:"0.3125"},{eq:"Binom n=4,p=½,P(2)",ans:"0.375"},{eq:"H₀ means",ans:"null hypothesis"},{eq:"p<0.05 means",ans:"reject H₀"},{eq:"p>0.05 means",ans:"fail to reject H₀"},{eq:"Type I error",ans:"false positive"},{eq:"Type II error",ans:"false negative"},{eq:"Std error",ans:"σ/√n"},{eq:"Z-score=",ans:"(x−μ)/σ"},{eq:"χ² purpose",ans:"test association"},{eq:"Conf.interval",ans:"range for param"},{eq:"Sampling dist=",ans:"dist of x̄"},{eq:"Skewed right",ans:"mean>median"},{eq:"Skewed left",ans:"mean<median"},{eq:"Symmetric",ans:"mean=median"},{eq:"Box plot whiskers",ans:"min & max"},{eq:"Normal P(X>60)",ans:"15.9% if σ=10"}]},"Simultaneous Equations":{low:[{eq:"x+y=5,x−y=1",ans:"x=3,y=2"},{eq:"x+y=7,x−y=3",ans:"x=5,y=2"},{eq:"x+y=9,x−y=5",ans:"x=7,y=2"},{eq:"x+y=8,x−y=2",ans:"x=5,y=3"},{eq:"x+y=10,x−y=4",ans:"x=7,y=3"},{eq:"2x+y=7,x+y=4",ans:"x=3,y=1"},{eq:"3x+y=10,x+y=4",ans:"x=3,y=1"},{eq:"2x+y=9,x+y=5",ans:"x=4,y=1"},{eq:"x+y=6,2x+y=9",ans:"x=3,y=3"},{eq:"x+y=8,3x+y=14",ans:"x=3,y=5"},{eq:"x+2y=9,2x+y=9",ans:"x=3,y=3"},{eq:"2x+y=8,x+2y=7",ans:"x=3,y=2"},{eq:"y=2x;x+y=9",ans:"x=3,y=6"},{eq:"y=x+1;2x+y=10",ans:"x=3,y=4"},{eq:"y=3x;2x+y=15",ans:"x=3,y=9"},{eq:"y=x−2;3x+y=14",ans:"x=4,y=2"},{eq:"y=2x+1;x+y=10",ans:"x=3,y=7"},{eq:"x+y=12,x=2y",ans:"x=8,y=4"},{eq:"x+y=15,x=4y",ans:"x=12,y=3"},{eq:"2x=y,x+y=12",ans:"x=4,y=8"}],mid:[{eq:"3x+2y=16,x+y=6",ans:"x=4,y=2"},{eq:"5x+2y=24,3x+y=14",ans:"x=4,y=2"},{eq:"2x+3y=18,x+2y=11",ans:"x=3,y=4"},{eq:"3x+4y=25,2x+3y=18",ans:"x=3,y=4"},{eq:"4x+5y=32,3x+4y=25",ans:"x=3,y=4"},{eq:"5x+3y=29,3x+2y=18",ans:"x=4,y=3"},{eq:"2x−y=3,x+2y=14",ans:"x=4,y=5"},{eq:"3x−2y=5,x+y=5",ans:"x=3,y=2"},{eq:"6x−y=17,2x+3y=11",ans:"x=4,y=7"},{eq:"7x+4y=46,5x+3y=33",ans:"x=6,y=1"},{eq:"Det[2,1;3,4]",ans:"5"},{eq:"Det[1,2;3,4]",ans:"−2"},{eq:"Inconsist.sys",ans:"no solution"},{eq:"Dependent sys",ans:"∞ solutions"},{eq:"Unique solution",ans:"one solution"},{eq:"3x+2y=12,y=3",ans:"x=2"},{eq:"4x+y=17,x=4",ans:"y=1"},{eq:"2x+5y=20,y=2",ans:"x=5"},{eq:"Elim.method",ans:"match coeffs"},{eq:"Subst.method",ans:"replace var"}],high:[{eq:"x²+y²=25,y=x+1",ans:"x≈3,y≈4"},{eq:"x²+y=10,y=x+2",ans:"x=2,y=4"},{eq:"y=x²,y=4x−4",ans:"x=2,y=4"},{eq:"x²+y²=13,x+y=5",ans:"x=2,y=3"},{eq:"y=x+3,y=x²−3",ans:"x=3,y=6"},{eq:"x+2y=7,x²+y=10",ans:"x=3,y=2"},{eq:"2x+y=9,xy=10",ans:"x=2,y=5"},{eq:"x−y=2,xy=15",ans:"x=5,y=3"},{eq:"x+y=7,xy=12",ans:"x=3,y=4"},{eq:"x+y=8,xy=15",ans:"x=3,y=5"},{eq:"Cramer's rule",ans:"use dets"},{eq:"Row echelon",ans:"upper triangular"},{eq:"Back subst.",ans:"solve bottom-up"},{eq:"Augmented mat.",ans:"[A|b]"},{eq:"Singular mat.",ans:"det=0"},{eq:"Non-singular",ans:"det≠0"},{eq:"3 eqs,3 unknowns",ans:"Gaussian elim."},{eq:"[A][x]=[b]",ans:"[x]=[A]⁻¹[b]"},{eq:"Inverse A⁻¹",ans:"adj(A)/det(A)"},{eq:"x+y+z=6,x+y=4",ans:"z=2"}]}},
+  11:{"Calculus":{low:[{eq:"d/dx(x²)",ans:"2x"},{eq:"d/dx(x³)",ans:"3x²"},{eq:"d/dx(x⁴)",ans:"4x³"},{eq:"d/dx(5x)",ans:"5"},{eq:"d/dx(3x²)",ans:"6x"},{eq:"d/dx(2x³)",ans:"6x²"},{eq:"d/dx(x²+x)",ans:"2x+1"},{eq:"d/dx(x³+2x)",ans:"3x²+2"},{eq:"d/dx(const.)",ans:"0"},{eq:"d/dx(7)",ans:"0"},{eq:"d/dx(x)",ans:"1"},{eq:"d/dx(x²+5)",ans:"2x"},{eq:"d/dx(3x+2)",ans:"3"},{eq:"d/dx(4x³−3x)",ans:"12x²−3"},{eq:"Grad x=2:y=x²",ans:"4"},{eq:"Grad x=3:y=x²",ans:"6"},{eq:"Grad x=1:y=3x²",ans:"6"},{eq:"Grad x=2:y=x³",ans:"12"},{eq:"Grad x=1:y=x³+x",ans:"4"},{eq:"d/dx(6x²+2x)",ans:"12x+2"}],mid:[{eq:"∫2x dx",ans:"x²+c"},{eq:"∫3x² dx",ans:"x³+c"},{eq:"∫4x³ dx",ans:"x⁴+c"},{eq:"∫6x dx",ans:"3x²+c"},{eq:"∫1 dx",ans:"x+c"},{eq:"∫₀²2x dx",ans:"4"},{eq:"∫₁³3x² dx",ans:"26"},{eq:"∫₀¹x² dx",ans:"1/3"},{eq:"∫₀²x³ dx",ans:"4"},{eq:"∫₁²2x dx",ans:"3"},{eq:"d/dx(sinx)",ans:"cosx"},{eq:"d/dx(cosx)",ans:"−sinx"},{eq:"d/dx(eˣ)",ans:"eˣ"},{eq:"d/dx(lnx)",ans:"1/x"},{eq:"d/dx(sin2x)",ans:"2cos2x"},{eq:"d/dx(cos3x)",ans:"−3sin3x"},{eq:"d/dx(e²ˣ)",ans:"2e²ˣ"},{eq:"Stationary:dy/dx=",ans:"0"},{eq:"d²y/dx²>0",ans:"minimum"},{eq:"d²y/dx²<0",ans:"maximum"}],high:[{eq:"Chain rule",ans:"f'(g)·g'"},{eq:"Product rule",ans:"uv'+u'v"},{eq:"Quotient rule",ans:"(u'v−uv')/v²"},{eq:"d/dx(x²sinx)",ans:"2xsinx+x²cosx"},{eq:"d/dx(x³eˣ)",ans:"x³eˣ+3x²eˣ"},{eq:"d/dx(sin²x)",ans:"2sinxcosx"},{eq:"d/dx((x+1)⁵)",ans:"5(x+1)⁴"},{eq:"∫sinx dx",ans:"−cosx+c"},{eq:"∫cosx dx",ans:"sinx+c"},{eq:"∫eˣ dx",ans:"eˣ+c"},{eq:"∫1/x dx",ans:"ln|x|+c"},{eq:"∫e²ˣ dx",ans:"½e²ˣ+c"},{eq:"∫₀^πsinx dx",ans:"2"},{eq:"∫₀^(π/2)cosx dx",ans:"1"},{eq:"d²y/dx²=0",ans:"inflection(check)"},{eq:"Newton's method",ans:"xₙ₊₁=xₙ−f/f'"},{eq:"Fund.theorem",ans:"∫_a^bf'=f(b)−f(a)"},{eq:"∫₁^e1/x dx",ans:"1"},{eq:"d/dx(ln2x)",ans:"1/x"},{eq:"d/dx(e^3x)",ans:"3e^3x"}]},"Advanced Algebra":{low:[{eq:"(x+2)(x+3)",ans:"x²+5x+6"},{eq:"(x+4)(x+5)",ans:"x²+9x+20"},{eq:"(x+1)(x+6)",ans:"x²+7x+6"},{eq:"(x+2)(x+7)",ans:"x²+9x+14"},{eq:"(x+3)(x+4)",ans:"x²+7x+12"},{eq:"(x−2)(x−3)",ans:"x²−5x+6"},{eq:"(x+3)(x−3)",ans:"x²−9"},{eq:"(x+5)(x−5)",ans:"x²−25"},{eq:"(x+4)(x−4)",ans:"x²−16"},{eq:"x²−9 factor",ans:"(x+3)(x−3)"},{eq:"x²−25 factor",ans:"(x+5)(x−5)"},{eq:"x²−16 factor",ans:"(x+4)(x−4)"},{eq:"x²+5x+6",ans:"(x+2)(x+3)"},{eq:"x²+7x+12",ans:"(x+3)(x+4)"},{eq:"(2x+1)(x+3)",ans:"2x²+7x+3"},{eq:"(3x+2)(x+1)",ans:"3x²+5x+2"},{eq:"(2x−1)(x+4)",ans:"2x²+7x−4"},{eq:"(3x−2)(x+3)",ans:"3x²+7x−6"},{eq:"x²+9x+20",ans:"(x+4)(x+5)"},{eq:"x²+7x+6",ans:"(x+1)(x+6)"}],mid:[{eq:"Comp.sq:x²+6x",ans:"(x+3)²−9"},{eq:"Comp.sq:x²+8x",ans:"(x+4)²−16"},{eq:"Comp.sq:x²+4x",ans:"(x+2)²−4"},{eq:"Comp.sq:x²−6x",ans:"(x−3)²−9"},{eq:"Disc b²−4ac>0",ans:"2 real roots"},{eq:"Disc b²−4ac=0",ans:"1 rep.root"},{eq:"Disc b²−4ac<0",ans:"no real roots"},{eq:"Disc x²+4x+4",ans:"0"},{eq:"Disc x²+2x+5",ans:"−16"},{eq:"Disc x²−5x+6",ans:"1"},{eq:"Quad x²+5x+6=0",ans:"x=−2,−3"},{eq:"Quad x²−7x+10=0",ans:"x=2,5"},{eq:"Quad 2x²+5x+2=0",ans:"x=−2,−½"},{eq:"Factor f(1)=0",ans:"(x−1) factor"},{eq:"Factor f(2)=0",ans:"(x−2) factor"},{eq:"Remainder f(3)",ans:"rem÷(x−3)"},{eq:"(x+2) fac x³+8?",ans:"yes"},{eq:"Disc 2x²+x−1",ans:"9"},{eq:"Comp.sq:x²−8x",ans:"(x−4)²−16"},{eq:"Quad x²+x−6=0",ans:"x=2,−3"}],high:[{eq:"Partial 1/((x+1)(x+2))",ans:"1/(x+1)−1/(x+2)"},{eq:"Sum 1+2+…+n",ans:"n(n+1)/2"},{eq:"Sum of squares",ans:"n(n+1)(2n+1)/6"},{eq:"Geo a/(1−r)",ans:"sum to ∞"},{eq:"Arith nth term",ans:"a+(n−1)d"},{eq:"Geo nth term",ans:"arⁿ⁻¹"},{eq:"Binom nCr",ans:"n!/(r!(n−r)!)"},{eq:"4C2",ans:"6"},{eq:"5C3",ans:"10"},{eq:"6C2",ans:"15"},{eq:"log₂8",ans:"3"},{eq:"log₃27",ans:"3"},{eq:"log₅125",ans:"3"},{eq:"log(ab)=",ans:"loga+logb"},{eq:"log(a/b)=",ans:"loga−logb"},{eq:"log(aⁿ)=",ans:"n·loga"},{eq:"nC0",ans:"1"},{eq:"nCn",ans:"1"},{eq:"nC1",ans:"n"},{eq:"Induction",ans:"base+step"}]}},
+};
+
+/* ════════════════════════════════════════
+   WEB AUDIO
+════════════════════════════════════════ */
+let AC=null,mPlay=false,mNodes=[],mGain=null,mLoop=null;
+const MEL=[[523.25,.18,0],[659.25,.18,.22],[783.99,.18,.44],[1046.5,.28,.66],[880,.18,1.04],[783.99,.18,1.26],[659.25,.28,1.48],[523.25,.18,1.86],[587.33,.18,2.14],[698.46,.18,2.36],[880,.18,2.58],[1046.5,.18,2.80],[987.77,.18,3.02],[880,.18,3.24],[698.46,.28,3.46],[587.33,.18,3.84],[523.25,.18,4.12],[659.25,.18,4.34],[783.99,.18,4.56],[880,.36,4.78],[783.99,.18,5.24],[698.46,.18,5.46],[587.33,.18,5.68],[523.25,.36,5.90]];
+const BSS=[[130.81,.4,0],[174.61,.4,.88],[196,.4,1.76],[174.61,.4,2.64],[130.81,.4,3.52],[146.83,.4,4.40],[164.81,.4,5.28],[130.81,.4,6.16]];
+function initAC(){if(AC)return;AC=new(window.AudioContext||window.webkitAudioContext)();mGain=AC.createGain();mGain.gain.value=.15;mGain.connect(AC.destination);}
+function playMLp(){
+  if(!AC||!mPlay)return;const n=AC.currentTime;
+  function pn(f,d,t,v,w){const o=AC.createOscillator(),g=AC.createGain();o.type=w;o.frequency.value=f;g.gain.setValueAtTime(0,n+t);g.gain.linearRampToValueAtTime(v,n+t+.02);g.gain.setValueAtTime(v,n+t+d-.04);g.gain.linearRampToValueAtTime(0,n+t+d);o.connect(g);g.connect(mGain);o.start(n+t);o.stop(n+t+d+.01);mNodes.push(o);}
+  MEL.forEach(([f,d,t])=>pn(f,d,t,.48,'triangle'));
+  BSS.forEach(([f,d,t])=>pn(f,d,t,.32,'sine'));
+  mLoop=setTimeout(playMLp,(6.75)*1000);
+}
+function startMu(){initAC();if(AC.state==='suspended')AC.resume();mPlay=true;playMLp();updMBtn();}
+function stopMu(){mPlay=false;clearTimeout(mLoop);mNodes.forEach(n=>{try{n.stop();}catch(e){}});mNodes=[];updMBtn();}
+function togMu(){if(mPlay)stopMu();else startMu();}
+function updMBtn(){const b=document.getElementById('music-btn');if(!b)return;b.textContent=mPlay?'🎵 Music On':'🔇 Music Off';b.classList.toggle('muted',!mPlay);}
+function sfx(t){
+  if(!AC)return;const n=AC.currentTime;
+  if(t==='flip'){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(880,n);o.frequency.linearRampToValueAtTime(1200,n+.06);g.gain.setValueAtTime(.1,n);g.gain.linearRampToValueAtTime(0,n+.1);o.connect(g);g.connect(AC.destination);o.start(n);o.stop(n+.12);}
+  else if(t==='match'){[880,1108,1318].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(0,n+i*.07);g.gain.linearRampToValueAtTime(.15,n+i*.07+.03);g.gain.linearRampToValueAtTime(0,n+i*.07+.18);o.connect(g);g.connect(AC.destination);o.start(n+i*.07);o.stop(n+i*.07+.2);});}
+  else if(t==='wrong'){const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.setValueAtTime(200,n);o.frequency.linearRampToValueAtTime(150,n+.15);g.gain.setValueAtTime(.07,n);g.gain.linearRampToValueAtTime(0,n+.2);o.connect(g);g.connect(AC.destination);o.start(n);o.stop(n+.22);}
+  else if(t==='win'){[523,659,784,1047].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(0,n+i*.12);g.gain.linearRampToValueAtTime(.18,n+i*.12+.04);g.gain.linearRampToValueAtTime(0,n+i*.12+.35);o.connect(g);g.connect(AC.destination);o.start(n+i*.12);o.stop(n+i*.12+.4);});}
+}
+
+/* ════════════════════════════════════════
+   STARS
+════════════════════════════════════════ */
+(function(){const sf=document.getElementById('sf'),S=['✦','✧','⋆','·','◦','˚'];
+for(let i=0;i<14;i++){const s=document.createElement('span');s.className='st';s.textContent=S[Math.floor(Math.random()*S.length)];s.style.cssText=`left:${Math.random()*100}vw;top:${50+Math.random()*55}vh;font-size:${9+Math.random()*13}px;animation-duration:${8+Math.random()*9}s;animation-delay:${Math.random()*8}s;`;sf.appendChild(s);}})();
+
+/* ════════════════════════════════════════
+   GAME STATE
+════════════════════════════════════════ */
+const TCV=['--t1','--t2','--t3','--t4','--t5'];
+const TNAMES=['Team A','Team B','Team C','Team D','Team E'];
+const TBG=['#fff0f7','#f0f9ff','#f0fff8','#f9f0ff','#fff8f0'];
+const TSH=['rgba(255,92,138,.28)','rgba(61,184,232,.28)','rgba(76,202,126,.28)','rgba(168,85,247,.28)','rgba(249,115,22,.28)'];
+let sYear=null,sTopic=null,sDiff='low',nTeams=2;
+let scores=[],curT=0,flipped=[],matched=[],locked=false,cards=[];
+
+/* ════════════════════════════════════════
+   GRID LAYOUT — best rectangle for 24 cards
+════════════════════════════════════════ */
+function bestGrid(){
+  const hdr=126,gap=9,W=window.innerWidth-28,H=window.innerHeight-hdr;
+  const cands=[[3,8],[4,6],[6,4],[8,3],[2,12],[12,2]];
+  let best=null,bScore=0;
+  cands.forEach(([c,r])=>{
+    if(c*r<24)return;
+    const cw=(W-gap*(c-1))/c,ch=(H-gap*(r-1))/r;
+    const ar=cw/ch;const pen=ar>2.4||ar<0.30?0.3:1;
+    const s=cw*ch*24*pen;if(s>bScore){bScore=s;best={c,r,cw,ch};}
+  });
+  return best||{c:4,r:6,cw:W/4,ch:H/6};
+}
+function applyGrid(){
+  const g=document.getElementById('card-grid');if(!g||!cards.length)return;
+  const {c,r,cw,ch}=bestGrid();const gap=9;
+  g.style.gridTemplateColumns=`repeat(${c},${Math.floor(cw)}px)`;
+  g.style.gridTemplateRows=`repeat(${r},${Math.floor(ch)}px)`;
+  g.style.gap=`${gap}px`;
+  const fs=Math.max(9,Math.min(24,Math.floor(cw)*.27));
+  document.querySelectorAll('.cv').forEach(el=>el.style.fontSize=fs+'px');
+  setTimeout(()=>cats.forEach(c=>{if(c.el.isConnected)c._place(c.x,c.y);}),100);
+}
+window.addEventListener('resize',applyGrid);
+
+/* ════════════════════════════════════════
+   SETUP UI
+════════════════════════════════════════ */
+function buildYears(){
+  const g=document.getElementById('year-grid');
+  const ks={1:'KS1',2:'KS1',3:'KS2',4:'KS2',5:'KS2',6:'KS2',7:'KS3',8:'KS3',9:'KS3',10:'KS4',11:'KS4'};
+  for(let y=1;y<=11;y++){
+    const b=document.createElement('button');b.className='yb';b.dataset.year=y;
+    b.innerHTML=`Y${y}<small>${ks[y]}</small>`;
+    b.addEventListener('click',()=>selY(y));g.appendChild(b);
+  }
+}
+function selY(y){
+  sYear=y;sTopic=null;
+  document.querySelectorAll('.yb').forEach(b=>b.classList.toggle('active',+b.dataset.year===y));
+  document.getElementById('tyl').textContent=`— Year ${y}`;
+  const g=document.getElementById('topic-grid');g.innerHTML='';
+  Object.keys(CURR[y]).forEach(t=>{
+    const b=document.createElement('button');b.className='tb';b.textContent=t;
+    b.addEventListener('click',()=>{sTopic=t;document.querySelectorAll('.tb').forEach(x=>x.classList.toggle('active',x.textContent===t));updS();});
+    g.appendChild(b);});
+  updS();
+}
+function updS(){
+  const b=document.getElementById('start-btn');
+  if(sYear&&sTopic){
+    const diffLabel={low:'Easy',mid:'Standard',high:'Challenge'}[sDiff]||sDiff;
+    b.disabled=false;
+    b.innerHTML=`🌸 Start — Y${sYear} · ${sTopic} · ${diffLabel} 🌸`;
+  } else {
+    b.disabled=true;
+    b.innerHTML='🌸 Select a Year &amp; Topic to Start 🌸';
+  }
+}
+document.querySelectorAll('.db').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.db').forEach(x=>x.classList.remove('active'));b.classList.add('active');sDiff=b.dataset.diff;updS();}));
+document.querySelectorAll('.tmb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tmb').forEach(x=>x.classList.remove('active'));b.classList.add('active');nTeams=parseInt(b.dataset.teams);}));
+document.getElementById('start-btn').addEventListener('click',startGame);
+document.getElementById('reset-btn').addEventListener('click',()=>{stopMu();cats.forEach(c=>c.destroy());cats=[];document.getElementById('game-screen').style.display='none';showSetup();});
+document.getElementById('play-again-btn').addEventListener('click',()=>{document.getElementById('win-screen').style.display='none';startGame();});
+document.getElementById('new-game-btn').addEventListener('click',()=>{document.getElementById('win-screen').style.display='none';stopMu();cats.forEach(c=>c.destroy());cats=[];document.getElementById('game-screen').style.display='none';showSetup();});
+document.getElementById('music-btn').addEventListener('click',togMu);
+
+/* ════════════════════════════════════════
+   GAME
+════════════════════════════════════════ */
+function shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function getTC(t){return getComputedStyle(document.documentElement).getPropertyValue(TCV[t]).trim();}
+
+function startGame(){
+  if(!sYear||!sTopic)return;
+  scores=Array(nTeams).fill(0);curT=0;flipped=[];matched=[];locked=false;
+  const pool=shuf([...CURR[sYear][sTopic][sDiff]]);
+  const used=new Set(),chosen=[];
+  for(const e of pool){if(!used.has(e.ans)){chosen.push(e);used.add(e.ans);if(chosen.length===12)break;}}
+  cards=[];
+  chosen.forEach((e,i)=>{cards.push({id:i*2,pid:i,type:'eq',v:e.eq});cards.push({id:i*2+1,pid:i,type:'ans',v:e.ans});});
+  shuf(cards);
+  document.getElementById('setup-screen').style.display='none';
+  document.body.classList.remove('setup-mode');
+  document.getElementById('game-screen').style.display='flex';
+  document.getElementById('gmeta').textContent=`Y${sYear} · ${sTopic} · ${sDiff.charAt(0).toUpperCase()+sDiff.slice(1)}`;
+  rScores();rBoard();rTurn();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{applyGrid();spawnCats(nTeams);}));
+  setTimeout(()=>{if(!mPlay)startMu();},300);
+}
+const CAT_EMOJIS=['🐱','🐈','🐾','😸','😺'];
+function rScores(){
+  const bar=document.getElementById('scores-bar');bar.innerHTML='';
+  for(let i=0;i<nTeams;i++){
+    const c=document.createElement('div');c.className='chip'+(i===curT?' cur':'');
+    c.style.setProperty('--tc',getTC(i));c.style.setProperty('--tbg',TBG[i]);c.style.setProperty('--tsh',TSH[i]);
+    c.innerHTML=`<span class="dot"></span><span>${CAT_EMOJIS[i]} ${TNAMES[i]}: <b>${scores[i]}</b></span>`;
+    bar.appendChild(c);
+  }
+}
+function rTurn(){
+  const el=document.getElementById('turn-banner');
+  el.innerHTML=`${CAT_EMOJIS[curT]} <span style="color:${getTC(curT)};font-family:'Fredoka One',cursive;">${TNAMES[curT]}</span>'s turn — flip two cards!`;
+}
+function rBoard(){
+  const g=document.getElementById('card-grid');g.innerHTML='';
+  cards.forEach((card,idx)=>{
+    const w=document.createElement('div');w.className='cw';w.dataset.idx=idx;
+    w.innerHTML=`<div class="ci"><div class="cface cb"><div class="cbpat">✿</div></div><div class="cface cf"><div class="cv">${card.v}</div><div class="ctl">${card.type==='eq'?'equation':'answer'}</div></div></div>`;
+    w.addEventListener('click',()=>onCard(idx,w));
+    g.appendChild(w);
+  });
+}
+function onCard(idx,w){
+  if(locked||matched.includes(idx)||flipped.includes(idx)||flipped.length>=2)return;
+  initAC();sfx('flip');
+  w.classList.add('flipped');flipped.push(idx);
+  if(flipped.length===2){
+    locked=true;
+    const[i1,i2]=flipped;const c1=cards[i1],c2=cards[i2];
+    const ok=(c1.pid===c2.pid)&&(c1.type!==c2.type);
+    setTimeout(()=>{
+      const e1=document.querySelector(`[data-idx="${i1}"]`),e2=document.querySelector(`[data-idx="${i2}"]`);
+      if(ok){
+        scores[curT]++;matched.push(i1,i2);
+        const col=getTC(curT);
+        e1.classList.add('matched','pop');e1.style.setProperty('--mc',col);
+        e2.classList.add('matched','pop');e2.style.setProperty('--mc',col);
+        sfx('match');showToast(`✓ Match! ${CAT_EMOJIS[curT]} ${TNAMES[curT]} scores!`,col);
+        spawnCf(e1);spawnCf(e2);
+        if(cats[curT])cats[curT].celebrate();
+        setTimeout(updateCatEmotions,1000);
+        rScores();checkWin();
+      } else {
+        e1.classList.add('wrong');e2.classList.add('wrong');sfx('wrong');
+        const prev=curT;
+        setTimeout(()=>{e1.classList.remove('flipped','wrong');e2.classList.remove('flipped','wrong');},530);
+        curT=(curT+1)%nTeams;
+        if(cats[prev])cats[prev].becomeSad();
+        setTimeout(()=>{if(cats[curT])cats[curT].celebrate();},350);
+        rTurn();rScores();
+        showToast(`✗ No match — ${CAT_EMOJIS[curT]} ${TNAMES[curT]}'s turn!`,'#c0a0a0');
+      }
+      flipped=[];locked=false;
+    },980);
+  }
+}
+function checkWin(){if(matched.length>=cards.length)setTimeout(showWin,720);}
+function showWin(){
+  sfx('win');stopMu();
+  cats.forEach((c,i)=>{if(scores[i]===Math.max(...scores))c.celebrate();else c.becomeSad();});
+  for(let i=0;i<30;i++)setTimeout(spawnCfRnd,i*45);
+  const res=document.getElementById('win-results');res.innerHTML='';
+  const mx=Math.max(...scores);
+  for(let i=0;i<nTeams;i++){
+    const c=document.createElement('div');c.className='wchip'+(scores[i]===mx?' winner':'');
+    c.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${scores[i]===mx?'🏆':CAT_EMOJIS[i]}</div><div class="wcn" style="color:${getTC(i)}">${TNAMES[i]}</div><div class="wcs">${scores[i]}</div><div style="font-size:10px;color:var(--text-soft);font-weight:700;letter-spacing:1px;margin-top:2px;">${scores[i]===1?'point':'points'}</div>`;
+    res.appendChild(c);
+  }
+  document.getElementById('win-screen').style.display='flex';
+}
+
+/* confetti */
+const CC=['#ff7eb3','#ffb347','#7ec8e3','#7ee8a2','#c8a4f8','#fff0a3'];
+function spawnCf(el){if(!el)return;const r=el.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;for(let i=0;i<7;i++){const p=document.createElement('div');p.className='cfp';p.style.background=CC[Math.floor(Math.random()*CC.length)];p.style.left=(cx+Math.random()*56-28)+'px';p.style.top=(cy+Math.random()*56-28)+'px';p.style.transform=`rotate(${Math.random()*360}deg)`;p.style.animationDuration=(.8+Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),1400);}}
+function spawnCfRnd(){const p=document.createElement('div');p.className='cfp';p.style.background=CC[Math.floor(Math.random()*CC.length)];p.style.left=Math.random()*100+'vw';p.style.top=Math.random()*40+'vh';p.style.width=(5+Math.random()*8)+'px';p.style.height=(5+Math.random()*8)+'px';p.style.borderRadius=Math.random()>.5?'50%':'3px';p.style.animationDuration=(1+Math.random()*.8)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),2000);}
+
+/* toast */
+let tt;
+function showToast(msg,col){const t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=col||'#fdd5e5';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2500);}
+
+/* INIT */
+buildYears();
+
+function showSetup(){
+  document.body.classList.add('setup-mode');
+  document.getElementById('setup-screen').style.display='flex';
+  // Scroll to top of setup
+  document.getElementById('setup-screen').scrollTop=0;
+}
+// Enter setup mode on load
+showSetup();
+</script>
+</body>
+</html>

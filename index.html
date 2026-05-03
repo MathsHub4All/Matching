@@ -11,6 +11,8 @@
 <meta name="theme-color" content="#ff7eb3">
 <meta name="description" content="A fun UK-curriculum maths card-matching game for 2–5 teams. Choose Year Group, topic and difficulty — flip, match, score!">
 <title>Math Match 🐱</title>
+<!-- Artifact persistent storage for leaderboard -->
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
@@ -89,6 +91,59 @@ button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
 
 /* ─── GAME SCREEN ─── */
 #game-screen{display:none;flex-direction:column;height:100vh;height:100dvh;padding:calc(10px + var(--sat)) calc(14px + var(--sar)) calc(10px + var(--sab)) calc(14px + var(--sal));overflow:hidden;}
+/* ─── MODE SELECTOR (setup) ─── */
+.mode-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mode-btn{background:var(--bg2);border:2.5px solid #f5d0e8;border-radius:16px;padding:16px 12px 14px;cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.mode-btn:hover{transform:translateY(-3px);box-shadow:0 6px 18px var(--sh2);}
+.mode-btn.active{border-color:var(--accent);background:#fff0f7;box-shadow:0 4px 16px var(--sh2);}
+.mode-icon{font-size:30px;}
+.mode-name{font-family:'Fredoka One',cursive;font-size:17px;color:var(--text-dark);}
+.mode-desc{font-size:10px;font-weight:700;color:var(--text-soft);letter-spacing:.5px;}
+.mode-btn.active .mode-name{color:var(--accent);}
+/* ─── COLUMN / ROW LABELS ─── */
+#grid-outer{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;}
+#col-labels{display:flex;align-items:center;gap:9px;flex-shrink:0;padding-left:22px;}
+.col-lbl{display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:clamp(9px,1.5vw,15px);color:var(--accent);opacity:.8;}
+#grid-with-rows{display:flex;flex-direction:row;align-items:flex-start;gap:3px;}
+#row-labels{display:flex;flex-direction:column;gap:9px;align-items:center;flex-shrink:0;}
+.row-lbl{display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:clamp(9px,1.5vw,15px);color:var(--accent);opacity:.8;}
+#gw{display:flex;align-items:center;justify-content:center;position:relative;}
+/* ─── INFO BAR ─── */
+#info-bar{flex-shrink:0;background:#fff;border:2.5px solid #fdd5e5;border-radius:100px;padding:6px 18px;font-size:clamp(11px,1.8vw,14px);font-weight:800;color:var(--text-mid);text-align:center;box-shadow:0 2px 10px var(--sh);display:flex;align-items:center;justify-content:center;gap:8px;max-width:100%;overflow:hidden;}
+.ib-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-soft);font-weight:700;flex-shrink:0;}
+.ib-val{font-family:'Fredoka One',cursive;font-size:clamp(12px,2vw,17px);color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50vw;}
+.ib-type{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-soft);font-weight:700;background:#ffeef5;border-radius:100px;padding:2px 8px;flex-shrink:0;}
+#info-bar.ib-hidden{opacity:0;}
+/* ─── SOLO STEPS ─── */
+.solo-steps{font-family:'Fredoka One',cursive;font-size:clamp(13px,2.2vw,20px);color:var(--accent3);background:#f0f9ff;border:2.5px solid #bde0ff;border-radius:100px;padding:4px 14px;display:flex;align-items:center;gap:5px;}
+.solo-steps small{font-size:.75em;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text-soft);}
+/* ─── LEADERBOARD SCREEN ─── */
+#leaderboard-screen{display:none;position:fixed;inset:0;background:rgba(253,246,240,.97);z-index:150;align-items:center;justify-content:center;flex-direction:column;gap:12px;backdrop-filter:blur(18px);padding:calc(20px + var(--sat)) 20px calc(20px + var(--sab));overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.lb-title{font-family:'Fredoka One',cursive;font-size:clamp(34px,7vw,66px);color:var(--accent);text-shadow:3px 3px 0 #ffc0d9;text-align:center;line-height:1;}
+.lb-subtitle{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-soft);text-align:center;margin-top:-6px;}
+.lb-table{width:100%;max-width:420px;background:#fff;border:2.5px solid #fdd5e5;border-radius:20px;overflow:hidden;box-shadow:0 6px 24px var(--sh2);}
+.lb-row{display:grid;grid-template-columns:36px 1fr 60px 54px;align-items:center;padding:10px 14px;gap:8px;border-bottom:1px solid #ffeef5;}
+.lb-row:last-child{border-bottom:none;}
+.lb-row.lb-head{background:linear-gradient(135deg,#ff7eb3,#ff9fcf);color:#fff;font-weight:800;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;border-bottom:none;}
+.lb-rank{font-family:'Fredoka One',cursive;font-size:20px;color:var(--accent);text-align:center;}
+.lb-row.lb-head .lb-rank{color:#fff;font-size:11px;font-family:'Nunito',sans-serif;}
+.lb-name{font-weight:800;font-size:13px;color:var(--text-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lb-steps{font-family:'Fredoka One',cursive;font-size:17px;color:var(--accent3);text-align:right;}
+.lb-row.lb-head .lb-steps,.lb-row.lb-head .lb-date,.lb-row.lb-head .lb-name{color:#fff;font-size:10px;font-family:'Nunito',sans-serif;font-weight:800;}
+.lb-date{font-size:9px;color:var(--text-soft);font-weight:700;text-align:right;white-space:nowrap;}
+.lb-meta{font-size:11px;font-weight:700;color:var(--text-soft);text-align:center;letter-spacing:.5px;}
+.lb-btn-row{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:320px;}
+/* ─── NAME INPUT MODAL ─── */
+#name-modal{display:none;position:fixed;inset:0;background:rgba(253,246,240,.97);z-index:160;align-items:center;justify-content:center;flex-direction:column;gap:0;backdrop-filter:blur(18px);padding:20px;}
+.nm-box{background:#fff;border:2.5px solid #fdd5e5;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 8px 32px var(--sh2);display:flex;flex-direction:column;align-items:center;gap:12px;}
+.nm-title{font-family:'Fredoka One',cursive;font-size:26px;color:var(--accent);text-align:center;line-height:1.2;}
+.nm-sub{font-size:11px;font-weight:700;color:var(--text-soft);text-align:center;}
+.nm-result{font-family:'Fredoka One',cursive;font-size:20px;color:var(--accent3);background:#f0f9ff;border:2px solid #bde0ff;border-radius:12px;padding:8px 18px;text-align:center;width:100%;}
+.nm-steps{font-size:13px;font-weight:800;color:var(--text-mid);text-align:center;}
+#name-input{width:100%;padding:12px 18px;border:2.5px solid #fdd5e5;border-radius:100px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;color:var(--text-dark);background:#fff;outline:none;transition:border-color .2s;text-align:center;}
+#name-input:focus{border-color:var(--accent);}
+#name-input::placeholder{color:var(--text-soft);}
+.nm-warn{font-size:11px;color:var(--accent);font-weight:700;text-align:center;min-height:15px;}
 .gh{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;flex-shrink:0;}
 .gtitle{font-family:'Fredoka One',cursive;font-size:clamp(20px,2.8vw,30px);color:var(--accent);line-height:1;}
 .gmeta{font-size:10px;color:var(--text-soft);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
@@ -104,8 +159,7 @@ button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
 .ibtn.music{border-color:#bde0ff;color:var(--accent3);}
 .ibtn.muted{opacity:.5;}
 
-/* ─── GRID WRAP ─── */
-#gw{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;}
+/* ─── GRID WRAP (now inside #grid-outer) ─── */
 .card-grid{display:grid;gap:9px;position:relative;z-index:5;}
 
 /* ─── CARDS ─── */
@@ -647,10 +701,10 @@ button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
   <!-- How to Play strip -->
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:820px;width:100%;margin-bottom:14px;">
     <div style="background:#fff;border:2px solid #fdd5e5;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--text-mid);box-shadow:0 2px 10px var(--sh);">
-      <span style="font-size:18px;">🃏</span> Pick a pair of cards that match
+      <span style="font-size:18px;">🃏</span> Flip two matching cards
     </div>
     <div style="background:#fff;border:2px solid #d8eeff;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--text-mid);box-shadow:0 2px 10px var(--sh);">
-      <span style="font-size:18px;">🔢</span> Equation card ↔ Answer card
+      <span style="font-size:18px;">🔢</span> Equation ↔ Answer
     </div>
     <div style="background:#fff;border:2px solid #d8fce8;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--text-mid);box-shadow:0 2px 10px var(--sh);">
       <span style="font-size:18px;">🏆</span> Most matches wins!
@@ -658,6 +712,23 @@ button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
   </div>
 
   <div class="setup-grid">
+
+    <!-- Mode -->
+    <div class="sp sp-full">
+      <div class="pl">🎮 Game Mode</div>
+      <div class="mode-row">
+        <button class="mode-btn active" id="mode-solo" onclick="setMode('solo')">
+          <span class="mode-icon">🧑</span>
+          <span class="mode-name">Solo</span>
+          <span class="mode-desc">Beat your best steps!</span>
+        </button>
+        <button class="mode-btn" id="mode-multi" onclick="setMode('multi')">
+          <span class="mode-icon">👥</span>
+          <span class="mode-name">Teams</span>
+          <span class="mode-desc">2–5 teams compete</span>
+        </button>
+      </div>
+    </div>
     <div class="sp sp-full">
       <div class="pl">🎓 Year Group</div>
       <div class="year-grid" id="year-grid"></div>
@@ -674,7 +745,7 @@ button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
         <button class="db" data-diff="high">🔥<br>High<small>Challenge</small></button>
       </div>
     </div>
-    <div class="sp">
+    <div class="sp" id="teams-panel" style="display:none;">
       <div class="pl">🐱 Teams</div>
       <div class="team-row">
         <button class="tmb active" data-teams="2">2</button>
@@ -682,6 +753,16 @@ button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
         <button class="tmb" data-teams="4">4</button>
         <button class="tmb" data-teams="5">5</button>
       </div>
+    </div>
+    <div class="sp" id="solo-info-panel">
+      <div class="pl">🏅 Solo Mode</div>
+      <div style="font-size:12px;font-weight:700;color:var(--text-soft);line-height:1.6;">
+        Complete all 24 cards in as <b style="color:var(--accent);">few steps as possible</b>.<br>
+        Your score is saved to the Leaderboard!
+      </div>
+      <button onclick="showLeaderboard()" style="margin-top:10px;background:#fff;border:2.5px solid var(--accent);color:var(--accent);border-radius:100px;font-family:'Fredoka One',cursive;font-size:15px;padding:8px 20px;cursor:pointer;transition:all .18s;touch-action:manipulation;" onmouseover="this.style.background='#fff0f7'" onmouseout="this.style.background='#fff'">
+        🏆 View Leaderboard
+      </button>
     </div>
   </div>
   <button class="start-btn" id="start-btn" disabled>🌸 Select a Year &amp; Topic to Start 🌸</button>
@@ -701,7 +782,24 @@ button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
     </div>
   </div>
   <div class="turn-banner" id="turn-banner"></div>
-  <div id="gw"><div class="card-grid" id="card-grid"></div></div>
+
+  <!-- Grid area with col/row labels -->
+  <div id="grid-outer">
+    <!-- Column labels: A B C … (injected by JS) -->
+    <div id="col-labels"></div>
+    <div id="grid-with-rows">
+      <!-- Row labels: 1 2 3 … (injected by JS) -->
+      <div id="row-labels"></div>
+      <!-- Card grid + cats -->
+      <div id="gw"><div class="card-grid" id="card-grid"></div></div>
+    </div>
+    <!-- Info bar: last flipped card content -->
+    <div id="info-bar" class="ib-hidden">
+      <span class="ib-label">Last Card</span>
+      <span class="ib-val" id="ib-val">—</span>
+      <span class="ib-type" id="ib-type"></span>
+    </div>
+  </div>
 </div>
 
 <!-- ══════ WIN ══════ -->
@@ -715,6 +813,41 @@ button,.yb,.tb,.db,.tmb,.ibtn,.pab,.start-btn,.cw{
   </div>
 </div>
 <div id="toast"></div>
+
+<!-- ══════ LEADERBOARD ══════ -->
+<div id="leaderboard-screen">
+  <div class="lb-title">🏆 Leaderboard</div>
+  <div class="lb-subtitle">Solo Mode · Top 10 · Last 3 Days</div>
+  <div class="lb-table" id="lb-table">
+    <div class="lb-row lb-head">
+      <div class="lb-rank">#</div>
+      <div class="lb-name">Player</div>
+      <div class="lb-steps">Steps</div>
+      <div class="lb-date">Date</div>
+    </div>
+    <!-- rows injected by JS -->
+  </div>
+  <div class="lb-meta" id="lb-meta"></div>
+  <div class="lb-btn-row">
+    <button class="pab" id="lb-play-btn">🐱 Play Solo!</button>
+    <button class="pab" style="background:linear-gradient(135deg,#7ec8e3,#5ab4d8);box-shadow:0 6px 22px rgba(126,200,227,.4);" onclick="hideLb()">← Back</button>
+  </div>
+</div>
+
+<!-- ══════ NAME INPUT MODAL ══════ -->
+<div id="name-modal">
+  <div class="nm-box">
+    <div class="nm-title">🎉 You finished!</div>
+    <div class="nm-steps" id="nm-steps"></div>
+    <div class="nm-sub">Enter your name to save your score</div>
+    <input type="text" id="name-input" placeholder="Your name..." maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false"/>
+    <div class="nm-warn" id="nm-warn"></div>
+    <div style="display:flex;gap:10px;width:100%;">
+      <button class="pab" id="nm-submit" style="flex:1;padding:12px;">Save Score 🐾</button>
+      <button class="pab" id="nm-skip" style="flex:0;padding:12px 16px;background:linear-gradient(135deg,#aaa,#ccc);box-shadow:none;">Skip</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ════════════════════════════════════════════════
@@ -1202,39 +1335,78 @@ const TCV=['--t1','--t2','--t3','--t4','--t5'];
 const TNAMES=['Team A','Team B','Team C','Team D','Team E'];
 const TBG=['#fff0f7','#f0f9ff','#f0fff8','#f9f0ff','#fff8f0'];
 const TSH=['rgba(255,92,138,.28)','rgba(61,184,232,.28)','rgba(76,202,126,.28)','rgba(168,85,247,.28)','rgba(249,115,22,.28)'];
-let sYear=null,sTopic=null,sDiff='low',nTeams=2;
-let scores=[],curT=0,flipped=[],matched=[],locked=false,cards=[];
+const CAT_EMOJIS=['🐱','🐈','🐾','😸','😺'];
 
-/* ════════════════════════════════════════
-   GRID LAYOUT — best rectangle for 24 cards
-════════════════════════════════════════ */
+/* ════ GAME STATE ════ */
+let sYear=null,sTopic=null,sDiff='low',nTeams=2,gameMode='solo';
+let scores=[],curT=0,flipped=[],matched=[],locked=false,cards=[];
+let soloSteps=0;          // solo: total flips (counted in pairs of 2 = 1 step)
+let gridCols=4,gridRows=6; // current layout
+
+/* ════ GRID LAYOUT ════ */
 function bestGrid(){
-  const hdr=126,gap=9,W=window.innerWidth-28,H=window.innerHeight-hdr;
+  // Reserve space: header ~72px + turn ~28px + info-bar ~38px + col-labels ~20px + gaps
+  const reserveH = gameMode==='solo' ? 160 : 160;
+  const gap=9, W=window.innerWidth-56, H=window.innerHeight-reserveH;
   const cands=[[3,8],[4,6],[6,4],[8,3],[2,12],[12,2]];
   let best=null,bScore=0;
   cands.forEach(([c,r])=>{
     if(c*r<24)return;
-    const cw=(W-gap*(c-1))/c,ch=(H-gap*(r-1))/r;
-    const ar=cw/ch;const pen=ar>2.4||ar<0.30?0.3:1;
-    const s=cw*ch*24*pen;if(s>bScore){bScore=s;best={c,r,cw,ch};}
+    const cw=(W-gap*(c-1))/c, ch=(H-gap*(r-1))/r;
+    const ar=cw/ch; const pen=ar>2.4||ar<0.30?0.3:1;
+    const s=cw*ch*24*pen; if(s>bScore){bScore=s;best={c,r,cw,ch};}
   });
   return best||{c:4,r:6,cw:W/4,ch:H/6};
 }
+
 function applyGrid(){
-  const g=document.getElementById('card-grid');if(!g||!cards.length)return;
-  const {c,r,cw,ch}=bestGrid();const gap=9;
-  g.style.gridTemplateColumns=`repeat(${c},${Math.floor(cw)}px)`;
-  g.style.gridTemplateRows=`repeat(${r},${Math.floor(ch)}px)`;
+  const g=document.getElementById('card-grid');
+  if(!g||!cards.length)return;
+  const {c,r,cw,ch}=bestGrid();
+  const gap=9;
+  gridCols=c; gridRows=r;
+  const fw=Math.floor(cw), fh=Math.floor(ch);
+  g.style.gridTemplateColumns=`repeat(${c},${fw}px)`;
+  g.style.gridTemplateRows=`repeat(${r},${fh}px)`;
   g.style.gap=`${gap}px`;
-  const fs=Math.max(9,Math.min(24,Math.floor(cw)*.27));
+  const fs=Math.max(9,Math.min(24,fw*.27));
   document.querySelectorAll('.cv').forEach(el=>el.style.fontSize=fs+'px');
-  setTimeout(()=>cats.forEach(c=>{if(c.el.isConnected)c._place(c.x,c.y);}),100);
+  // Build col labels A B C…
+  const colLbls=document.getElementById('col-labels');
+  colLbls.innerHTML='';
+  for(let i=0;i<c;i++){
+    const d=document.createElement('div');
+    d.className='col-lbl';
+    d.style.width=fw+'px';
+    d.textContent=String.fromCharCode(65+i);
+    colLbls.appendChild(d);
+  }
+  // Build row labels 1 2 3…
+  const rowLbls=document.getElementById('row-labels');
+  rowLbls.innerHTML='';
+  for(let i=0;i<r;i++){
+    const d=document.createElement('div');
+    d.className='row-lbl';
+    d.style.height=fh+'px';
+    d.textContent=i+1;
+    rowLbls.appendChild(d);
+  }
+  // Reposition cats
+  setTimeout(()=>cats.forEach(ct=>{if(ct.el.isConnected)ct._place(ct.x,ct.y);}),100);
 }
 window.addEventListener('resize',applyGrid);
 
-/* ════════════════════════════════════════
-   SETUP UI
-════════════════════════════════════════ */
+/* ════ MODE SELECTOR ════ */
+function setMode(m){
+  gameMode=m;
+  document.getElementById('mode-solo').classList.toggle('active',m==='solo');
+  document.getElementById('mode-multi').classList.toggle('active',m==='multi');
+  document.getElementById('teams-panel').style.display=m==='multi'?'':'none';
+  document.getElementById('solo-info-panel').style.display=m==='solo'?'':'none';
+  updS();
+}
+
+/* ════ SETUP UI ════ */
 function buildYears(){
   const g=document.getElementById('year-grid');
   const ks={1:'KS1',2:'KS1',3:'KS2',4:'KS2',5:'KS2',6:'KS2',7:'KS3',8:'KS3',9:'KS3',10:'KS4',11:'KS4'};
@@ -1258,59 +1430,117 @@ function selY(y){
 function updS(){
   const b=document.getElementById('start-btn');
   if(sYear&&sTopic){
-    const diffLabel={low:'Easy',mid:'Standard',high:'Challenge'}[sDiff]||sDiff;
+    const dL={low:'Easy',mid:'Standard',high:'Challenge'}[sDiff]||sDiff;
+    const mL=gameMode==='solo'?'🧑 Solo':'👥 Teams';
     b.disabled=false;
-    b.innerHTML=`🌸 Start — Y${sYear} · ${sTopic} · ${diffLabel} 🌸`;
+    b.innerHTML=`🌸 Start ${mL} — Y${sYear} · ${sTopic} · ${dL} 🌸`;
   } else {
     b.disabled=true;
     b.innerHTML='🌸 Select a Year &amp; Topic to Start 🌸';
   }
 }
-document.querySelectorAll('.db').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.db').forEach(x=>x.classList.remove('active'));b.classList.add('active');sDiff=b.dataset.diff;updS();}));
-document.querySelectorAll('.tmb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tmb').forEach(x=>x.classList.remove('active'));b.classList.add('active');nTeams=parseInt(b.dataset.teams);}));
+document.querySelectorAll('.db').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.db').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');sDiff=b.dataset.diff;updS();
+}));
+document.querySelectorAll('.tmb').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tmb').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');nTeams=parseInt(b.dataset.teams);
+}));
 document.getElementById('start-btn').addEventListener('click',startGame);
-document.getElementById('reset-btn').addEventListener('click',()=>{stopMu();cats.forEach(c=>c.destroy());cats=[];document.getElementById('game-screen').style.display='none';showSetup();});
-document.getElementById('play-again-btn').addEventListener('click',()=>{document.getElementById('win-screen').style.display='none';startGame();});
-document.getElementById('new-game-btn').addEventListener('click',()=>{document.getElementById('win-screen').style.display='none';stopMu();cats.forEach(c=>c.destroy());cats=[];document.getElementById('game-screen').style.display='none';showSetup();});
-document.getElementById('music-btn').addEventListener('click',togMu);
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  stopMu();cats.forEach(c=>c.destroy());cats=[];
+  document.getElementById('game-screen').style.display='none';showSetup();
+});
+document.getElementById('play-again-btn').addEventListener('click',()=>{
+  document.getElementById('win-screen').style.display='none';startGame();
+});
+document.getElementById('new-game-btn').addEventListener('click',()=>{
+  document.getElementById('win-screen').style.display='none';
+  stopMu();cats.forEach(c=>c.destroy());cats=[];
+  document.getElementById('game-screen').style.display='none';showSetup();
+});
+document.getElementById('lb-play-btn').addEventListener('click',()=>{
+  hideLb();showSetup();
+  setTimeout(()=>setMode('solo'),100);
+});
 
-/* ════════════════════════════════════════
-   GAME
-════════════════════════════════════════ */
+/* ════ UTILITY ════ */
 function shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function getTC(t){return getComputedStyle(document.documentElement).getPropertyValue(TCV[t]).trim();}
 
+/* ════ GAME START ════ */
 function startGame(){
   if(!sYear||!sTopic)return;
-  scores=Array(nTeams).fill(0);curT=0;flipped=[];matched=[];locked=false;
+  scores=Array(gameMode==='solo'?1:nTeams).fill(0);
+  curT=0;flipped=[];matched=[];locked=false;soloSteps=0;
   const pool=shuf([...CURR[sYear][sTopic][sDiff]]);
   const used=new Set(),chosen=[];
   for(const e of pool){if(!used.has(e.ans)){chosen.push(e);used.add(e.ans);if(chosen.length===12)break;}}
   cards=[];
-  chosen.forEach((e,i)=>{cards.push({id:i*2,pid:i,type:'eq',v:e.eq});cards.push({id:i*2+1,pid:i,type:'ans',v:e.ans});});
+  chosen.forEach((e,i)=>{
+    cards.push({id:i*2,pid:i,type:'eq',v:e.eq});
+    cards.push({id:i*2+1,pid:i,type:'ans',v:e.ans});
+  });
   shuf(cards);
   document.getElementById('setup-screen').style.display='none';
   document.body.classList.remove('setup-mode');
   document.getElementById('game-screen').style.display='flex';
   document.getElementById('gmeta').textContent=`Y${sYear} · ${sTopic} · ${sDiff.charAt(0).toUpperCase()+sDiff.slice(1)}`;
+  // Reset info bar
+  setInfoBar(null);
   rScores();rBoard();rTurn();
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{applyGrid();spawnCats(nTeams);}));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    applyGrid();
+    if(gameMode==='multi') spawnCats(nTeams);
+    else { cats.forEach(c=>c.destroy());cats=[]; }
+  }));
   setTimeout(()=>{if(!mPlay)startMu();},300);
 }
-const CAT_EMOJIS=['🐱','🐈','🐾','😸','😺'];
+
+/* ════ INFO BAR ════ */
+function setInfoBar(card){
+  const bar=document.getElementById('info-bar');
+  const val=document.getElementById('ib-val');
+  const typ=document.getElementById('ib-type');
+  if(!card){
+    bar.classList.add('ib-hidden');
+    return;
+  }
+  bar.classList.remove('ib-hidden');
+  val.textContent=card.v;
+  typ.textContent=card.type==='eq'?'Equation':'Answer';
+  typ.style.background=card.type==='eq'?'#ffeef5':'#eef8ff';
+  typ.style.color=card.type==='eq'?'var(--accent)':'var(--accent3)';
+}
+
+/* ════ SCORE / TURN DISPLAY ════ */
 function rScores(){
   const bar=document.getElementById('scores-bar');bar.innerHTML='';
-  for(let i=0;i<nTeams;i++){
-    const c=document.createElement('div');c.className='chip'+(i===curT?' cur':'');
-    c.style.setProperty('--tc',getTC(i));c.style.setProperty('--tbg',TBG[i]);c.style.setProperty('--tsh',TSH[i]);
-    c.innerHTML=`<span class="dot"></span><span>${CAT_EMOJIS[i]} ${TNAMES[i]}: <b>${scores[i]}</b></span>`;
-    bar.appendChild(c);
+  if(gameMode==='solo'){
+    // Show steps counter
+    const d=document.createElement('div');d.className='solo-steps';
+    d.innerHTML=`👟 <b>${soloSteps}</b> <small>steps</small>`;
+    bar.appendChild(d);
+  } else {
+    for(let i=0;i<nTeams;i++){
+      const c=document.createElement('div');c.className='chip'+(i===curT?' cur':'');
+      c.style.setProperty('--tc',getTC(i));c.style.setProperty('--tbg',TBG[i]);c.style.setProperty('--tsh',TSH[i]);
+      c.innerHTML=`<span class="dot"></span><span>${CAT_EMOJIS[i]} ${TNAMES[i]}: <b>${scores[i]}</b></span>`;
+      bar.appendChild(c);
+    }
   }
 }
 function rTurn(){
   const el=document.getElementById('turn-banner');
-  el.innerHTML=`${CAT_EMOJIS[curT]} <span style="color:${getTC(curT)};font-family:'Fredoka One',cursive;">${TNAMES[curT]}</span>'s turn — flip two cards!`;
+  if(gameMode==='solo'){
+    el.innerHTML=`🐱 Find all 12 matching pairs — fewest steps wins!`;
+  } else {
+    el.innerHTML=`${CAT_EMOJIS[curT]} <span style="color:${getTC(curT)};font-family:'Fredoka One',cursive;">${TNAMES[curT]}</span>'s turn — name a card (e.g. <b>B3</b>)!`;
+  }
 }
+
+/* ════ BOARD RENDER ════ */
 function rBoard(){
   const g=document.getElementById('card-grid');g.innerHTML='';
   cards.forEach((card,idx)=>{
@@ -1320,75 +1550,220 @@ function rBoard(){
     g.appendChild(w);
   });
 }
+
+/* ════ CARD CLICK ════ */
 function onCard(idx,w){
   if(locked||matched.includes(idx)||flipped.includes(idx)||flipped.length>=2)return;
   initAC();sfx('flip');
-  w.classList.add('flipped');flipped.push(idx);
+  w.classList.add('flipped');
+  flipped.push(idx);
+  // Update info bar with this card
+  setInfoBar(cards[idx]);
+
   if(flipped.length===2){
     locked=true;
-    const[i1,i2]=flipped;const c1=cards[i1],c2=cards[i2];
+    if(gameMode==='solo') soloSteps++;
+    const[i1,i2]=flipped;
+    const c1=cards[i1],c2=cards[i2];
     const ok=(c1.pid===c2.pid)&&(c1.type!==c2.type);
     setTimeout(()=>{
-      const e1=document.querySelector(`[data-idx="${i1}"]`),e2=document.querySelector(`[data-idx="${i2}"]`);
+      const e1=document.querySelector(`[data-idx="${i1}"]`);
+      const e2=document.querySelector(`[data-idx="${i2}"]`);
       if(ok){
         scores[curT]++;matched.push(i1,i2);
-        const col=getTC(curT);
+        const col=gameMode==='solo'?'var(--accent3)':getTC(curT);
         e1.classList.add('matched','pop');e1.style.setProperty('--mc',col);
         e2.classList.add('matched','pop');e2.style.setProperty('--mc',col);
-        sfx('match');showToast(`✓ Match! ${CAT_EMOJIS[curT]} ${TNAMES[curT]} scores!`,col);
+        sfx('match');
+        if(gameMode==='solo'){
+          showToast(`✓ Match! ${soloSteps} step${soloSteps!==1?'s':''} so far 🐾`,'var(--accent3)');
+          rScores();
+        } else {
+          showToast(`✓ Match! ${CAT_EMOJIS[curT]} ${TNAMES[curT]} scores!`,getTC(curT));
+          if(cats[curT])cats[curT].celebrate();
+          setTimeout(updateCatEmotions,900);
+          rScores();
+        }
         spawnCf(e1);spawnCf(e2);
-        if(cats[curT])cats[curT].celebrate();
-        setTimeout(updateCatEmotions,1000);
-        rScores();checkWin();
+        checkWin();
       } else {
         e1.classList.add('wrong');e2.classList.add('wrong');sfx('wrong');
-        const prev=curT;
         setTimeout(()=>{e1.classList.remove('flipped','wrong');e2.classList.remove('flipped','wrong');},530);
-        curT=(curT+1)%nTeams;
-        if(cats[prev])cats[prev].becomeSad();
-        setTimeout(()=>{if(cats[curT])cats[curT].celebrate();},350);
-        rTurn();rScores();
-        showToast(`✗ No match — ${CAT_EMOJIS[curT]} ${TNAMES[curT]}'s turn!`,'#c0a0a0');
+        if(gameMode==='multi'){
+          const prev=curT;
+          curT=(curT+1)%nTeams;
+          if(cats[prev])cats[prev].becomeSad();
+          setTimeout(()=>{if(cats[curT])cats[curT].celebrate();},350);
+          showToast(`✗ No match — ${CAT_EMOJIS[curT]} ${TNAMES[curT]}'s turn!`,'#c0a0a0');
+          rTurn();
+        } else {
+          showToast(`✗ Not a match — keep going! 💪`,'#c0a0a0');
+          rScores();
+        }
+        rScores();
       }
       flipped=[];locked=false;
     },980);
   }
 }
 function checkWin(){if(matched.length>=cards.length)setTimeout(showWin,720);}
+
+/* ════ WIN SCREEN ════ */
 function showWin(){
-  sfx('win');stopMu();
-  cats.forEach((c,i)=>{if(scores[i]===Math.max(...scores))c.celebrate();else c.becomeSad();});
-  for(let i=0;i<30;i++)setTimeout(spawnCfRnd,i*45);
-  const res=document.getElementById('win-results');res.innerHTML='';
-  const mx=Math.max(...scores);
-  for(let i=0;i<nTeams;i++){
-    const c=document.createElement('div');c.className='wchip'+(scores[i]===mx?' winner':'');
-    c.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${scores[i]===mx?'🏆':CAT_EMOJIS[i]}</div><div class="wcn" style="color:${getTC(i)}">${TNAMES[i]}</div><div class="wcs">${scores[i]}</div><div style="font-size:10px;color:var(--text-soft);font-weight:700;letter-spacing:1px;margin-top:2px;">${scores[i]===1?'point':'points'}</div>`;
-    res.appendChild(c);
+  sfx('win');
+  if(gameMode==='multi'){
+    stopMu();
+    cats.forEach((c,i)=>{if(scores[i]===Math.max(...scores))c.celebrate();else c.becomeSad();});
+    for(let i=0;i<30;i++)setTimeout(spawnCfRnd,i*45);
+    const res=document.getElementById('win-results');res.innerHTML='';
+    const mx=Math.max(...scores);
+    for(let i=0;i<nTeams;i++){
+      const c=document.createElement('div');c.className='wchip'+(scores[i]===mx?' winner':'');
+      c.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${scores[i]===mx?'🏆':CAT_EMOJIS[i]}</div>
+        <div class="wcn" style="color:${getTC(i)}">${TNAMES[i]}</div>
+        <div class="wcs">${scores[i]}</div>
+        <div style="font-size:10px;color:var(--text-soft);font-weight:700;letter-spacing:1px;margin-top:2px;">${scores[i]===1?'point':'points'}</div>`;
+      res.appendChild(c);
+    }
+    document.getElementById('win-screen').style.display='flex';
+  } else {
+    // Solo: show name input
+    stopMu();
+    for(let i=0;i<20;i++)setTimeout(spawnCfRnd,i*50);
+    document.getElementById('nm-steps').textContent=`You completed it in ${soloSteps} step${soloSteps!==1?'s':''}!`;
+    document.getElementById('nm-warn').textContent='';
+    document.getElementById('name-input').value='';
+    document.getElementById('name-modal').style.display='flex';
+    setTimeout(()=>document.getElementById('name-input').focus(),400);
   }
-  document.getElementById('win-screen').style.display='flex';
 }
 
-/* confetti */
+/* ════ LEADERBOARD ════ */
+const HP_NAMES=['Harry Potter','Hermione Granger','Ron Weasley','Neville Longbottom','Luna Lovegood','Ginny Weasley','Draco Malfoy','Cedric Diggory','Cho Chang','Seamus Finnigan','Dean Thomas','Lavender Brown','Parvati Patil','Padma Patil','Oliver Wood','Fred Weasley','George Weasley','Percy Weasley','Albus Dumbledore','Minerva McGonagall'];
+const BAD_WORDS=['fuck','shit','bitch','ass','damn','crap','piss','bastard','bollocks','wank','twat','knob','cunt','dick','cock','pussy','arse','idiot','stupid','dumb','moron','retard','kill','die','hate','ugly','fat','loser','suck','gay','sex','porn','nude'];
+
+function isBadName(n){
+  const l=n.toLowerCase().replace(/[^a-z0-9 ]/g,'');
+  return BAD_WORDS.some(w=>l.includes(w));
+}
+function cleanName(n){
+  n=n.trim().replace(/\s+/,' ').slice(0,20);
+  if(!n||isBadName(n)) return HP_NAMES[Math.floor(Math.random()*HP_NAMES.length)];
+  return n;
+}
+
+// Storage key for leaderboard
+const LB_KEY=`mm_lb_y${()=>sYear}_t${()=>sTopic}_d${()=>sDiff}`;
+function getLBKey(){return `mm_lb_${sYear||'x'}_${(sTopic||'x').replace(/[^a-z0-9]/gi,'')}_${sDiff}`;}
+
+function loadLB(){
+  try{
+    const raw=localStorage.getItem(getLBKey());
+    const all=raw?JSON.parse(raw):[];
+    // Keep only last 3 days
+    const cutoff=Date.now()-3*24*60*60*1000;
+    return all.filter(e=>e.ts>cutoff);
+  } catch(e){return [];}
+}
+function saveLB(entry){
+  try{
+    let all=loadLB();
+    all.push(entry);
+    all.sort((a,b)=>a.steps-b.steps);
+    all=all.slice(0,50); // keep max 50
+    localStorage.setItem(getLBKey(),JSON.stringify(all));
+  } catch(e){}
+}
+function topLB(){return loadLB().sort((a,b)=>a.steps-b.steps).slice(0,10);}
+
+function renderLB(entries){
+  const tbl=document.getElementById('lb-table');
+  // Keep header row
+  const header=tbl.querySelector('.lb-head');
+  tbl.innerHTML='';
+  tbl.appendChild(header);
+  if(!entries.length){
+    const empty=document.createElement('div');
+    empty.style.cssText='padding:20px;text-align:center;color:var(--text-soft);font-weight:700;font-size:13px;';
+    empty.textContent='No scores yet — be the first! 🐱';
+    tbl.appendChild(empty);
+    document.getElementById('lb-meta').textContent='';
+    return;
+  }
+  const rankEmoji=['🥇','🥈','🥉'];
+  entries.forEach((e,i)=>{
+    const row=document.createElement('div');row.className='lb-row';
+    const date=new Date(e.ts);
+    const dateStr=`${date.getDate()}/${date.getMonth()+1}`;
+    row.innerHTML=`
+      <div class="lb-rank">${rankEmoji[i]||`${i+1}`}</div>
+      <div class="lb-name">${e.name}</div>
+      <div class="lb-steps">${e.steps}</div>
+      <div class="lb-date">${dateStr}</div>`;
+    tbl.appendChild(row);
+  });
+  document.getElementById('lb-meta').textContent=`Y${sYear} · ${sTopic} · ${sDiff.charAt(0).toUpperCase()+sDiff.slice(1)} · Last 3 days`;
+}
+
+function showLeaderboard(){
+  // Need year/topic/diff selected to show correct leaderboard
+  if(!sYear||!sTopic){
+    showToast('Pick a Year & Topic first!','var(--accent)');
+    return;
+  }
+  renderLB(topLB());
+  document.getElementById('leaderboard-screen').style.display='flex';
+}
+function hideLb(){document.getElementById('leaderboard-screen').style.display='none';}
+
+/* ════ NAME INPUT LOGIC ════ */
+document.getElementById('nm-submit').addEventListener('click',submitName);
+document.getElementById('nm-skip').addEventListener('click',()=>{
+  document.getElementById('name-modal').style.display='none';
+  showLeaderboard();
+});
+document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});
+
+function submitName(){
+  const raw=document.getElementById('name-input').value.trim();
+  if(!raw){document.getElementById('nm-warn').textContent='Please enter a name!';return;}
+  const replaced=isBadName(raw)||!raw;
+  const finalName=cleanName(raw);
+  if(isBadName(raw)){
+    document.getElementById('nm-warn').textContent=`Name replaced with: ${finalName} 😸`;
+    document.getElementById('name-input').value=finalName;
+    setTimeout(()=>doSave(finalName),1200);
+    return;
+  }
+  doSave(finalName);
+}
+function doSave(name){
+  saveLB({name,steps:soloSteps,ts:Date.now(),year:sYear,topic:sTopic,diff:sDiff});
+  document.getElementById('name-modal').style.display='none';
+  renderLB(topLB());
+  document.getElementById('leaderboard-screen').style.display='flex';
+}
+
+/* ════ CONFETTI ════ */
 const CC=['#ff7eb3','#ffb347','#7ec8e3','#7ee8a2','#c8a4f8','#fff0a3'];
 function spawnCf(el){if(!el)return;const r=el.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;for(let i=0;i<7;i++){const p=document.createElement('div');p.className='cfp';p.style.background=CC[Math.floor(Math.random()*CC.length)];p.style.left=(cx+Math.random()*56-28)+'px';p.style.top=(cy+Math.random()*56-28)+'px';p.style.transform=`rotate(${Math.random()*360}deg)`;p.style.animationDuration=(.8+Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),1400);}}
 function spawnCfRnd(){const p=document.createElement('div');p.className='cfp';p.style.background=CC[Math.floor(Math.random()*CC.length)];p.style.left=Math.random()*100+'vw';p.style.top=Math.random()*40+'vh';p.style.width=(5+Math.random()*8)+'px';p.style.height=(5+Math.random()*8)+'px';p.style.borderRadius=Math.random()>.5?'50%':'3px';p.style.animationDuration=(1+Math.random()*.8)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),2000);}
 
 /* toast */
 let tt;
-function showToast(msg,col){const t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=col||'#fdd5e5';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2500);}
+function showToast(msg,col){const t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=typeof col==='string'&&col.startsWith('var')?'#fdd5e5':col||'#fdd5e5';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2500);}
 
-/* INIT */
+/* ════ INIT ════ */
 buildYears();
+setMode('solo'); // default to solo
 
 function showSetup(){
   document.body.classList.add('setup-mode');
   document.getElementById('setup-screen').style.display='flex';
-  // Scroll to top of setup
   document.getElementById('setup-screen').scrollTop=0;
 }
-// Enter setup mode on load
 showSetup();
+
 </script>
 </body>
 </html>
